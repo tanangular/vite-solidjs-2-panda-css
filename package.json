@@ -23,6 +23,7 @@
     "@pandacss/dev": "^1.9.1",
     "oxfmt": "^0.42.0",
     "oxlint": "^1.57.0",
+    "shiki": "^4.0.2",
     "solid-devtools": "^0.34.5",
     "typescript": "^6.0.2",
     "vite": "^8.0.8",
