@@ -13,6 +13,7 @@
     "lint": "oxlint .",
     "prepare": "panda codegen",
     "serve": "vite preview",
+    "slim": "slim start pandacss --port 3000",
     "start": "vite"
   },
   "dependencies": {
