@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": true,
+  "bracketSpacing": true,
+  "bracketSameLine": true,
+  "semi": false,
+  "jsxBracketSameLine": false,
+  "printWidth": 80,
+  "experimentalSortImports": {
+    "newlinesBetween": false
+  },
+  "embeddedLanguageFormatting": "auto",
+  "experimentalSortPackageJson": {
+    "sortScripts": true
+  },
+  "ignorePatterns": [
+    "coverage/",
+    "dist/",
+    "index.html",
+    "pnpm-lock.yaml",
+    "src/__generated__/",
+    "src/translations/",
+    "styled-system/"
+  ]
+}
