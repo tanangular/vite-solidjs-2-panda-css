@@ -1,23 +1,10 @@
-import { type Component, createSignal } from 'solid-js'
+import {
+  type Component,
+  createEffect,
+  createMemo,
+  createSignal,
+} from 'solid-js'
 import { css, type Styles } from '#panda/css'
-
-const style1: Styles = {
-  bgColor: 'amber.400',
-  border: '2px solid',
-  borderColor: 'amber.800',
-}
-
-const style2: Styles = {
-  bgColor: 'fuchsia.400',
-  border: '2px solid',
-  borderColor: 'fuchsia.800',
-}
-
-const paragraph1 = {
-  paddingInline: '6rem',
-  paddingBlock: '1rem',
-  marginBlock: '2rem',
-}
 
 const buttonStyle: Styles = {
   bgColor: 'gray.200',
@@ -39,49 +26,62 @@ const heading1: Styles = {
 }
 
 const App: Component = () => {
-  const [counter1, setCounter1] = createSignal(10)
-  const [counter2, setCounter2] = createSignal(initializeCounter)
+  const [counter1, setCounter1] = createSignal(20)
+  const double1 = createMemo(() => {
+    console.log('double1')
+    return counter1() * 2
+  })
 
-  function initializeCounter(currentValue: number) {
-    console.log('e: ', currentValue)
-    return counter1() + 33
+  const double2 = () => {
+    console.log('double2')
+    return counter1() * 2
   }
 
-  return (
-    <>
-      <pre>ตัวอย่างนี้แสดงให้เห็นถึง Writable Derived Signal ใน signal 2.0</pre>
-      <blockquote>
-        ใน SolidJS 2.0 คำว่า "Writable Derived Signal" หมายถึง Signal
-        รูปแบบใหม่ที่สร้างขึ้นโดยการส่ง "ฟังก์ชัน (fn)" เข้าไปใน createSignal
-        แทนที่จะเป็นการใส่ค่าข้อมูลเริ่มต้นแบบปกติ
-        <br />
-        <br/>- แนวคิดหลัก: มันถูกออกแบบมาให้ทำหน้าที่คล้ายกับ "Writable Memo" (เมโมที่สามารถเขียนค่าทับได้) ซึ่งจะคำนวณค่าของตัวเองโดยอัตโนมัติจาก Signal อื่นๆ ที่มันพึ่งพาอยู่
-        <br/>- วิธีการสร้าง: ใช้ไวยากรณ์ createSignal(() => logic) โดยฟังก์ชันที่ใส่เข้าไปจะถูกใช้ในการคำนวณค่าเริ่มต้นและติดตามความเปลี่ยนแปลงแบบ Reactive
-        <br /><br/> สังเกตุว่า #2 signal counter2 จะ derived ค่าจาก counter1() + 33 เมื่อ counter1 เปลี่ยน counter2 ก็จะเปลี่ยนตามไปด้วยโดยอัตโนมัติ (กด Increment ใน #1, counter2 ใน #2 เปลี่ยนตาม)
-      </blockquote>
-      <div class={css(style1, paragraph1)}>
-        <header class={css(heading1)}>#1 createSignal ด้วย primitive value</header>
-        <p>createSignal(0)</p>
-        <h2 class={css(heading1)}>Counter: {counter1()}</h2>
-        <button
-          onClick={() => setCounter1(counter1() + 1)}
-          class={css(buttonStyle)}>
-          Increment
-        </button>
-      </div>
+  const [double3, _setCounter3] = createSignal(() => {
+    console.log('double3')
+    return counter1() * 2
+  })
 
-      <div class={css(style2, paragraph1)}>
-        <header class={css(heading1)}>
-          #2 createSignal ด้วย initializeCounter
-        </header>
-        <h2 class={css(heading1)}>Counter: {counter2()}</h2>
-        <button
-          onClick={() => setCounter2(counter2() + 1)}
-          class={css(buttonStyle)}>
-          Increment
-        </button>
-      </div>
-    </>
+  const [double4, setDouble4] = createSignal(0)
+
+  createEffect(
+    () => counter1() * 2,
+    (value) => {
+      console.log('double4: ', value)
+      setDouble4(value)
+    },
+  )
+
+  return (
+    <div
+      class={css(
+        { bgColor: 'amber.400', border: '2px solid', borderColor: 'amber.800' },
+        { paddingInline: '6rem', paddingBlock: '1rem', marginBlock: '2rem' },
+      )}>
+      <header class={css(heading1)}>#1 createSignal ด้วย primitive value</header>
+      <p>{double1()}</p>
+      <p>{double1()}</p>
+      <br />
+
+      <p>{double2()}</p>
+      <p>{double2()}</p>
+      <br />
+
+      <p>{double3()}</p>
+      <p>{double3()}</p>
+      <br />
+
+      <p>{double4()}</p>
+      <p>{double4()}</p>
+      <br />
+
+      <h2 class={css(heading1)}>Counter: {counter1()}</h2>
+      <button
+        onClick={() => setCounter1(counter1() + 1)}
+        class={css(buttonStyle)}>
+        Increment
+      </button>
+    </div>
   )
 }
 
