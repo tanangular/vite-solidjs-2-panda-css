@@ -10,27 +10,16 @@ const heading1: Styles = {
 
 const App: Component = () => {
   const [counter, setCounter] = createSignal(
-    (console.log('createSignal first'), 20),
-    {
-      pureWrite: true,
-    },
+    (console.log('createSignal first: counter: '), 20),
   )
 
-  const memo = createMemo(
-    normalFunction,
-    (console.log('init in createMemo'), 55),
-    {
-      equals(_prev, _curr) {
-        return false
-      },
-    },
-  )
-
-  function normalFunction(prev: number, current: number) {
-    console.log('normalFunction: ', prev, current)
+  const normalFunction = (prev: number | undefined) => {
+    console.log('normalFunction: ', prev)
     counter()
-    return 2
+    return (prev ?? 0) * 1.1
   }
+
+  const memo = createMemo(normalFunction, 45)
 
   return (
     <div
@@ -47,10 +36,10 @@ const App: Component = () => {
         class={css({ bg: 'red.400', p: '1rem' })}>
         Increment
       </button>
-
-      <p>{(console.log('hello memo1'), memo())}</p>
-      <p>{(console.log('hello memo2'), memo())}</p>
-      <p>{(console.log('hello memo3'), memo())}</p>
+      <p>{`count: ${counter()}`}</p>
+      <p>{(console.log('hello memo 1'), memo())}</p>
+      <p>{(console.log('hello memo 2'), memo())}</p>
+      <p>{(console.log('hello memo 3'), memo())}</p>
       {(console.log('++++++++++++++++++'), `  `)}
     </div>
   )
