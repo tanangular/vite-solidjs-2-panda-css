@@ -1,4 +1,4 @@
-import { defineConfig } from 'oxlint';
+import { defineConfig } from 'oxlint'
 
 export default defineConfig({
   env: {
@@ -73,5 +73,6 @@ export default defineConfig({
     'unused-imports/no-unused-imports': 'error',
     'use-isnan': 'error',
     'valid-typeof': 'error',
+    'no-sequences': ['off', { allowInParentheses: true }],
   },
-});
+})

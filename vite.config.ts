@@ -3,9 +3,12 @@ import solidPlugin from 'vite-plugin-solid'
 import devtools from 'solid-devtools/vite'
 
 export default defineConfig({
-	plugins: [ devtools(), solidPlugin() ],
+	plugins: [ devtools({
+		autoname: true,
+	}), solidPlugin() ],
 	resolve: {
 		tsconfigPaths: true,
+		conditions: [ 'solid', 'browser', 'module', 'development' ],
 	},
 	server: {
 		port: 3000,
@@ -14,5 +17,8 @@ export default defineConfig({
 	build: {
 		target: 'esnext',
 		sourcemap: true,
+	},
+	optimizeDeps: {
+		exclude: [ 'solid-js', '@solidjs/web', 'solid-js/store' ],
 	},
 })
