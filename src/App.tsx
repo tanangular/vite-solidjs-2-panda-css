@@ -16,10 +16,15 @@ const App: Component = () => {
   const normalFunction = (prev: number | undefined) => {
     console.log('normalFunction: ', prev)
     counter()
-    return (prev ?? 0) * 1.1
+    return (prev ?? 0) + 3
   }
 
-  const memo = createMemo(normalFunction, 45)
+  const memo = createMemo(normalFunction, 5, {
+    equals(prev, next) {
+      console.log('memo: ', prev, next)
+      return prev > 20
+    },
+  })
 
   return (
     <div
