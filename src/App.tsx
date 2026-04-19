@@ -1,4 +1,4 @@
-import { type Component, createMemo, createSignal } from 'solid-js'
+import { type Component, createMemo, createSignal, Loading } from 'solid-js'
 import { css, type Styles } from '#panda/css'
 
 const heading1: Styles = {
@@ -8,45 +8,46 @@ const heading1: Styles = {
   fontFamily: 'Google Sans',
 }
 
-const App: Component = () => {
-  const [counter, setCounter] = createSignal(
-    (console.log('createSignal first: counter: '), 20),
-  )
+const btn1 = {
+  bg: '#6200ee',
+  color: '#fff',
+  padding: '0.5rem 1rem',
+  m: '0.5rem 0',
+}
 
-  const normalFunction = (prev: number | undefined) => {
-    console.log('normalFunction: ', prev)
-    counter()
-    return (prev ?? 0) + 3
+const App: Component = () => {
+  const [userId, setUserId] = createSignal(1)
+
+  // 1. ฟังก์ชันที่ส่งค่ากลับเป็น PromiseLike (ตรงกับนิยาม ComputeFunction)
+  const fetchMockData = (id: number, prev: unknown) => {
+    console.log('id: ', id, prev)
+    return new Promise<string>((resolve) => {
+      // จำลองการดึงข้อมูลที่ใช้เวลา 1 วินาที
+      setTimeout(() => resolve(`ข้อมูลของผู้ใช้ไอดี: ${id}`), 700)
+    })
   }
 
-  const memo = createMemo(normalFunction, 5, {
-    equals(prev, next) {
-      console.log('memo: ', prev, next)
-      return prev > 20
-    },
-  })
+  // 2. ใช้ createMemo ที่คืนค่าเป็น Promise
+  // ใน Solid 2.0, createMemo จะ "suspend" อัตโนมัติเมื่อคืนค่าเป็น Promise [2]
+  const userData = createMemo((prev) => fetchMockData(userId(), prev), 10)
 
   return (
-    <div
-      class={css(
-        { bgColor: 'amber.400', border: '2px solid', borderColor: 'amber.800' },
-        { paddingInline: '6rem', paddingBlock: '1rem', marginBlock: '2rem' },
-      )}>
-      <header class={css(heading1)}>
-        ทดลองการใช้งาน ตัวแปรธรรมดา (const val = ...):
-        ดีที่สุดสำหรับค่าคงที่ที่คำนวณครั้งเดียวจบ เพราะไม่มี Overhead ของระบบ Reactive
-      </header>
-      <button
-        onClick={() => setCounter(counter() + 1)}
-        class={css({ bg: 'red.400', p: '1rem' })}>
-        Increment
+    <>
+      <button onClick={() => setUserId((id) => id + 1)} class={css(btn1)}>
+        เปลี่ยน User (ปัจจุบัน: {userId()})
       </button>
-      <p>{`count: ${counter()}`}</p>
-      <p>{(console.log('hello memo 1'), memo())}</p>
-      <p>{(console.log('hello memo 2'), memo())}</p>
-      <p>{(console.log('hello memo 3'), memo())}</p>
-      {(console.log('++++++++++++++++++'), `  `)}
-    </div>
+
+      <hr />
+
+      {/* 3. ใช้คอมโพเนนต์ <Loading> เพื่อแสดงผลระหว่างรอ Promise Resolve */}
+      <Loading fallback={<p>กำลังโหลดข้อมูลจาก Promise...</p>}>
+        <div class={css(heading1)}>
+          <h3>ผลลัพธ์:</h3>
+          {/* เมื่อ Promise สำเร็จ ค่าที่ถูก Resolve จะถูกส่งออกมาที่นี่ */}
+          <p>{userData()}</p>
+        </div>
+      </Loading>
+    </>
   )
 }
 
