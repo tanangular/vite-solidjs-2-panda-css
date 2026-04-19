@@ -37,8 +37,8 @@ importers:
         specifier: ^8.0.8
         version: 8.0.8
       vite-plugin-solid:
-        specifier: ^3.0.0-next.4
-        version: 3.0.0-next.4(@solidjs/web@2.0.0-beta.6(@solidjs/signals@0.13.12)(solid-js@2.0.0-beta.6))(solid-js@2.0.0-beta.6)(vite@8.0.8)
+        specifier: 3.0.0-next.5
+        version: 3.0.0-next.5(@solidjs/web@2.0.0-beta.6(@solidjs/signals@0.13.12)(solid-js@2.0.0-beta.6))(solid-js@2.0.0-beta.6)(vite@8.0.8)
 
 packages:
 
@@ -83,10 +83,6 @@ packages:
     engines: {node: '>=6.9.0'}
     peerDependencies:
       '@babel/core': ^7.0.0
-
-  '@babel/helper-plugin-utils@7.27.1':
-    resolution: {integrity: sha512-1gn1Up5YXka3YYAHGKpbideQ5Yjf1tDa9qYcgysz+cNCXukyLl6DjPXhD3VRwSb8c0J9tA4b2+rHEZtc6R0tlw==}
-    engines: {node: '>=6.9.0'}
 
   '@babel/helper-plugin-utils@7.28.6':
     resolution: {integrity: sha512-S9gzZ/bz83GRysI7gAD4wPT/AI3uCnY+9xn+Mx/KPs2JwHJIz1W8PZkg2cqyt3RNOBM8ejcXhV6y8Og7ly/Dug==}
@@ -354,6 +350,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.30':
     resolution: {integrity: sha512-GQ7Nw5G2lTu/BtHTKfXhKHok2WGetd4XYcVKGx00SjAk8GMwgJM3zr6zORiPGuOE+/vkc90KtTosSSvaCjKb2Q==}
+
+  '@jridgewell/trace-mapping@0.3.31':
+    resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
   '@modelcontextprotocol/sdk@1.29.0':
     resolution: {integrity: sha512-zo37mZA9hJWpULgkRpowewez1y6ML5GsXJPY8FI0tBBCd77HEvza4jDqRKOXgHNn867PVGCyTdzqpz0izu5ZjQ==}
@@ -1924,10 +1923,10 @@ packages:
   solid-js@2.0.0-beta.6:
     resolution: {integrity: sha512-C0IYMgZPPM0NKgonHNlWMDUwRKC88rII+5z8pFtAkqi/cHfdiUkpYLPtxP8YsqH7TwLRQGyB8/NgiVzkxNwPGA==}
 
-  solid-refresh@0.8.0-next.6:
-    resolution: {integrity: sha512-QXLGvNH4P29BAmT1nysg5/sImrXY6daR07juJVw2dinJSISIjyC0qIaZSSUK0M/zN6sJmtFtCAdMmubj+zTQ1A==}
+  solid-refresh@0.8.0-next.7:
+    resolution: {integrity: sha512-fqkPRAeiE0tqfo2ZljeQBIXwfYssU2w1FmaWFrXmnV33B/CfGfez7BjtOF0Y1/orUNRXI/DZcJlJThHllcCMsA==}
     peerDependencies:
-      solid-js: '>=2.0.0-beta.0 <2.0.0'
+      solid-js: '>=2.0.0-beta.7 <2.0.0-experimental.0'
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -2068,8 +2067,8 @@ packages:
   vfile@6.0.3:
     resolution: {integrity: sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q==}
 
-  vite-plugin-solid@3.0.0-next.4:
-    resolution: {integrity: sha512-6t2oUJs5H7UtFxw3tM/EC2mxHmzeOtMlnPI/HFkzDqy1XaDuGjbdhggSi7KbuhP0mWM7I+IktPDlu4SWuCFPKw==}
+  vite-plugin-solid@3.0.0-next.5:
+    resolution: {integrity: sha512-hcn3mzevQDv6Oyo/Zv5LXdOrlWwKGeGVxNhc9fUq3AcN9aO6KABy52yq5cvnPDo3qaxmvOJVbNS1H4V5rx7AQg==}
     peerDependencies:
       '@solidjs/web': '>=2.0.0-beta.0 <2.0.0-experimental.0'
       '@testing-library/jest-dom': ^5.16.6 || ^5.17.0 || ^6.*
@@ -2203,7 +2202,7 @@ snapshots:
       '@babel/parser': 7.29.2
       '@babel/types': 7.29.0
       '@jridgewell/gen-mapping': 0.3.13
-      '@jridgewell/trace-mapping': 0.3.30
+      '@jridgewell/trace-mapping': 0.3.31
       jsesc: 3.1.0
 
   '@babel/helper-compilation-targets@7.27.2':
@@ -2236,8 +2235,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/helper-plugin-utils@7.27.1': {}
-
   '@babel/helper-plugin-utils@7.28.6': {}
 
   '@babel/helper-string-parser@7.27.1': {}
@@ -2264,7 +2261,7 @@ snapshots:
   '@babel/plugin-syntax-jsx@7.27.1(@babel/core@7.28.4)':
     dependencies:
       '@babel/core': 7.28.4
-      '@babel/helper-plugin-utils': 7.27.1
+      '@babel/helper-plugin-utils': 7.28.6
 
   '@babel/plugin-syntax-typescript@7.28.6(@babel/core@7.28.4)':
     dependencies:
@@ -2433,6 +2430,11 @@ snapshots:
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
   '@jridgewell/trace-mapping@0.3.30':
+    dependencies:
+      '@jridgewell/resolve-uri': 3.1.2
+      '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@jridgewell/trace-mapping@0.3.31':
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -4034,7 +4036,7 @@ snapshots:
       seroval: 1.5.2
       seroval-plugins: 1.5.2(seroval@1.5.2)
 
-  solid-refresh@0.8.0-next.6(solid-js@2.0.0-beta.6):
+  solid-refresh@0.8.0-next.7(solid-js@2.0.0-beta.6):
     dependencies:
       '@babel/generator': 7.29.1
       '@babel/types': 7.29.0
@@ -4170,7 +4172,7 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  vite-plugin-solid@3.0.0-next.4(@solidjs/web@2.0.0-beta.6(@solidjs/signals@0.13.12)(solid-js@2.0.0-beta.6))(solid-js@2.0.0-beta.6)(vite@8.0.8):
+  vite-plugin-solid@3.0.0-next.5(@solidjs/web@2.0.0-beta.6(@solidjs/signals@0.13.12)(solid-js@2.0.0-beta.6))(solid-js@2.0.0-beta.6)(vite@8.0.8):
     dependencies:
       '@babel/core': 7.28.4
       '@solidjs/web': 2.0.0-beta.6(@solidjs/signals@0.13.12)(solid-js@2.0.0-beta.6)
@@ -4178,7 +4180,7 @@ snapshots:
       babel-preset-solid: 2.0.0-beta.6(@babel/core@7.28.4)(solid-js@2.0.0-beta.6)
       merge-anything: 5.1.7
       solid-js: 2.0.0-beta.6
-      solid-refresh: 0.8.0-next.6(solid-js@2.0.0-beta.6)
+      solid-refresh: 0.8.0-next.7(solid-js@2.0.0-beta.6)
       vite: 8.0.8
       vitefu: 1.1.1(vite@8.0.8)
     transitivePeerDependencies:
