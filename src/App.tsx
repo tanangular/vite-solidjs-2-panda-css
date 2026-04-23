@@ -1,48 +1,44 @@
-import { type Component, createMemo, createSignal, Loading } from 'solid-js'
+import { type Component, createSignal, Show } from 'solid-js'
 import { css } from '#panda/css'
 
 const btn1 = {
-  bg: 'violet.500',
+  bgGradient: 'to-r',
+  border: '1px solid black',
+  gradientFrom: 'orange.400',
+  gradientTo: 'orange.600',
   color: '#fff',
   padding: '0.5rem 1rem',
   m: '0.5rem 0',
 }
 
-const App: Component = () => {
-  const [trigger, setTrigger] = createSignal(0)
+// สร้าง Signal พร้อมกำหนดค่า unobserved
+const [count, _setCount] = createSignal(0, {
+  name: 'MyCounter',
+  // คอลแบ็กนี้จะรันเมื่อ Signal "ไม่ถูกใช้งานแล้ว"
+  unobserved: () => {
+    console.log("⚠️ Signal 'count' สูญเสียผู้ติดตามทั้งหมดแล้ว! (Unobserved)")
+    // ประโยชน์: ใช้ปิด WebSocket, เคลียร์ Timer หรือหยุดการ Fetch ข้อมูลที่ต้นทาง
+  },
+})
 
-  // 1. สร้างฟังก์ชันที่คืนค่าเป็น AsyncIterable (ใช้ async function*)
-  // ตามนิยาม: (v: Prev) => AsyncIterable<Next>
-  async function* fetchStreamData(id: number) {
-    yield 'กำลังเชื่อมต่อ...' // ค่าแรกที่ส่งออกมา
-    await new Promise((r) => setTimeout(r, 1000))
-
-    yield 'กำลังดึงข้อมูลส่วนที่ 1...' // ค่าที่สอง
-    await new Promise((r) => setTimeout(r, 1000))
-
-    yield `ข้อมูลของ ID ${id} เสร็จสมบูรณ์!` // ค่าสุดท้าย
-  }
-
-  // 2. ใช้ใน createMemo
-  // ใน Solid 2.0, memo จะติดตามการ 'yield' ของ AsyncIterable และอัปเดตค่าโดยอัตโนมัติ
-  const dataStream = createMemo(() => fetchStreamData(trigger()))
+function App(): Component {
+  const [visible, setVisible] = createSignal(true)
 
   return (
     <div>
-      <button onClick={() => setTrigger((t) => t + 1)} class={css(btn1)}>
-        เริ่มดึงข้อมูลใหม่ (ครั้งที่ {trigger()})
+      <button
+        onClick={() => {
+          setVisible(!visible())
+          console.log('visible: ', visible())
+        }}
+        class={css(btn1)}>
+        Toggle Visibility
       </button>
-
-      <hr />
-
-      {/* 3. ใช้ <Loading> เพื่อจัดการสถานะเริ่มต้น */}
-      <Loading fallback={<p>กำลังเตรียมการ Stream...</p>}>
-        <div>
-          <h3>สถานะปัจจุบัน:</h3>
-          {/* ค่านี้จะเปลี่ยนไปตามที่ Generator ทำการ yield ออกมา */}
-          <p>{dataStream()}</p>
-        </div>
-      </Loading>
+      <Show when={visible()}>
+        {/* ทันทีที่ visible() เป็น true: count() จะถูกอ่าน และเกิดการ Subscribe */}
+        {/* ทันทีที่ visible() เป็น false: count() จะหยุดถูกอ่าน และถูก Unsubscribe */}
+        <p>Current Count: {count()}</p>
+      </Show>
     </div>
   )
 }
