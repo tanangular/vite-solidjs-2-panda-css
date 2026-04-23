@@ -21,11 +21,11 @@ const [count, _setCount] = createSignal(0, {
   },
 })
 
-function App(): Component {
+const App: Component = () => {
   const [visible, setVisible] = createSignal(true)
 
   return (
-    <div>
+    <>
       <button
         onClick={() => {
           setVisible(!visible())
@@ -39,7 +39,7 @@ function App(): Component {
         {/* ทันทีที่ visible() เป็น false: count() จะหยุดถูกอ่าน และถูก Unsubscribe */}
         <p>Current Count: {count()}</p>
       </Show>
-    </div>
+    </>
   )
 }
 

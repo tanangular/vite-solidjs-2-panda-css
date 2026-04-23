@@ -22,7 +22,6 @@
   },
   "devDependencies": {
     "@pandacss/dev": "^1.10.0",
-    "@typescript/native-preview": "7.0.0-dev.20260421.2",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-no-only-tests": "^3.3.0",
     "eslint-plugin-perfectionist": "^5.9.0",
@@ -32,7 +31,7 @@
     "shiki": "^4.0.2",
     "solid-devtools": "^0.34.5",
     "typescript": "^6.0.3",
-    "vite": "^8.0.9",
+    "vite": "^8.0.10",
     "vite-plugin-solid": "3.0.0-next.5"
   }
 }
