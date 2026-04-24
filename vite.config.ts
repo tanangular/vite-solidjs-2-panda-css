@@ -12,7 +12,7 @@ export default defineConfig({
 	},
 	server: {
 		port: 3000,
-		allowedHosts: [ 'pandacss.test' ],
+		allowedHosts: [ 'pandacss.test', 'solidjs20.test' ],
 	},
 	build: {
 		target: 'esnext',
