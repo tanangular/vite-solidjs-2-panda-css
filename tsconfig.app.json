@@ -32,5 +32,11 @@
     },
     "customConditions": ["import", "require"]
   },
-  "include": ["src", "styled-system"]
+  "include": [
+    "src",
+    "styled-system",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.d.ts"
+  ]
 }
