@@ -1,7 +1,41 @@
 @layer reset, base, tokens, recipes, utilities;
 
 body {
-  background: blanchedalmond;
-  margin: 4rem;
+  background: linear-gradient(to bottom right, darkorange, orangered);
+  margin: 8rem;
   font-family: 'Google Sans', sans-serif;
+  font-size: 1.1rem;
+  min-height: 100dvh;
+}
+
+pre.shiki {
+  padding: 1.3rem;
+  white-space: normal;
+}
+
+.shiki,
+#input {
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 4em;
+  white-space: pre;
+  border-width: 1px;
+  border-color: #9ca3af4d;
+  border-radius: 0.25rem;
+  padding: 1rem;
+}
+
+/* เลือกที่ตัว wrapper ที่ Shiki สร้าง */
+pre.shiki {
+  padding: 1.5rem;
+  border-radius: 8px;
+  overflow-x: auto; /* ให้เลื่อนซ้ายขวาได้ถ้าบรรทัดยาวเกิน */
+  white-space: pre; /* รักษา space และบรรทัดใหม่ไว้ */
+  font-family:
+    'JetBrainsMono Nerd Font Mono', Menlo, Consolas, 'Courier New', monospace;
+  tab-size: 2; /* กำหนดความกว้างของ Tab */
+}
+
+textarea {
+  display: none;
 }
