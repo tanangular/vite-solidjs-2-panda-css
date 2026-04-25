@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@pandacss/dev": "^1.10.0",
+    "@shikijs/transformers": "^4.0.2",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-no-only-tests": "^3.3.0",
     "eslint-plugin-perfectionist": "^5.9.0",
