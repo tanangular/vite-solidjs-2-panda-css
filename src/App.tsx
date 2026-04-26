@@ -54,25 +54,15 @@ const [selected, setSelected] = createSignal(0)
 const [prevSelected, setPrevSelected] = createSignal(0)
 
 createEffect(
-  // Track selected() changes, store previous value
   () => selected(),
   (curr, prev) => {
     setPrevSelected(prev ?? 0)
-  },
-)
-
-createEffect(
-  // Compute Phase: คืนค่าเฉพาะเมื่อ parity เปลี่ยน (true=odd, false=even)
-  () => selected() % 2 !== 0,
-  // Apply Phase: รันเมื่อ isOdd เปลี่ยนจากค่าเดิม
-  (isOdd, wasOdd) => {
-    console.log('isOdd: ', isOdd, 'wasOdd: ', wasOdd)
-    if (wasOdd === false && isOdd) {
+    if (prev !== undefined && prev % 2 === 0 && curr % 2 !== 0) {
       confetti({
         position: { x: 700, y: 500 },
         count: 300,
         size: 1,
-        velocity: 86,
+        velocity: 106,
       })
     }
   },
@@ -202,21 +192,23 @@ createEffect(
         <ShikiCodearea
           id="example2"
           initialCode={`
+const [selected, setSelected] = createSignal(0)
+const [prevSelected, setPrevSelected] = createSignal(0)
+
 createEffect(
-  // Compute Phase: คืนค่าเฉพาะเมื่อ parity เปลี่ยน (true=odd, false=even)
-  () => selected() % 2 !== 0,
-  // Apply Phase: รันเมื่อ isOdd เปลี่ยนจากค่าเดิม
-  (isOdd, wasOdd) => {
-    if (wasOdd === false && isOdd) {
+  () => selected(),
+  (curr, prev) => {
+    setPrevSelected(prev ?? 0)
+    if (prev !== undefined && prev % 2 === 0 && curr % 2 !== 0) {
       confetti({
         position: { x: 700, y: 500 },
         count: 300,
         size: 1,
-        velocity: 86,
+        velocity: 106,
       })
     }
   },
-)
+) 
 `}
           lang="typescript"
           theme="laserwave"></ShikiCodearea>
