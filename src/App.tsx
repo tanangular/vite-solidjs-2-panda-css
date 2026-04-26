@@ -30,19 +30,43 @@ const section: Styles = {
   padding: '1rem',
 }
 
+const numberDisplay: Styles = {
+  display: 'inline-grid',
+  aspectRatio: 1,
+  placeItems: 'center',
+  padding: '6px',
+  width: '30px',
+  height: '30px',
+  backgroundColor: 'darkblue',
+}
+
+const numberDisplay2: Styles = {
+  ...numberDisplay,
+  backgroundColor: 'pink.500',
+}
+
 const randomInts = (num: number, maxInt: number = 10) =>
   Array.from({ length: num }, () => Math.floor(Math.random() * maxInt))
 
 const numbers = randomInts(20, 100)
-console.log('numbers:', numbers)
 const [name, setName] = createSignal('Solid')
 const [selected, setSelected] = createSignal(0)
+const [prevSelected, setPrevSelected] = createSignal(0)
+
+createEffect(
+  // Track selected() changes, store previous value
+  () => selected(),
+  (curr, prev) => {
+    setPrevSelected(prev ?? 0)
+  },
+)
 
 createEffect(
   // Compute Phase: คืนค่าเฉพาะเมื่อ parity เปลี่ยน (true=odd, false=even)
   () => selected() % 2 !== 0,
   // Apply Phase: รันเมื่อ isOdd เปลี่ยนจากค่าเดิม
   (isOdd, wasOdd) => {
+    console.log('isOdd: ', isOdd, 'wasOdd: ', wasOdd)
     if (wasOdd === false && isOdd) {
       confetti({
         position: { x: 700, y: 500 },
@@ -178,34 +202,40 @@ createEffect(
         <ShikiCodearea
           id="example2"
           initialCode={`
-import { createEffect, createSignal } from "solid-js";
-import confetti from "@hiseb/confetti";
-
-const numbers = [...]; // 20 random ints
-const [selected, setSelected] = createSignal(0);
-
 createEffect(
-  // 1. Compute Phase: คืนค่า isOdd (boolean) — เช็ค parity
+  // Compute Phase: คืนค่าเฉพาะเมื่อ parity เปลี่ยน (true=odd, false=even)
   () => selected() % 2 !== 0,
-
-  // 2. Apply Phase: รันเมื่อ isOdd เปลี่ยนค่าเท่านั้น
-  //    wasOdd = ค่าจากรอบก่อน, isOdd = ค่าปัจจุบัน
+  // Apply Phase: รันเมื่อ isOdd เปลี่ยนจากค่าเดิม
   (isOdd, wasOdd) => {
-    if (wasOdd === false && isOdd === true) {
-      // Transition: even → odd → show confetti!
-      confetti({ position: { x: 0.5, y: 0.5 }, count: 200, size: 8, velocity: 16 })
+    if (wasOdd === false && isOdd) {
+      confetti({
+        position: { x: 700, y: 500 },
+        count: 300,
+        size: 1,
+        velocity: 86,
+      })
     }
   },
-);
+)
 `}
           lang="typescript"
           theme="laserwave"></ShikiCodearea>
-        <div>
-          เลือกตัวเลขปัจจุบัน:{' '}
-          <span class={css({ fontWeight: 'bold', color: 'gold' })}>
+        <section
+          style={{
+            display: 'flex',
+            'align-items': 'center',
+            gap: '6px',
+            margin: '0.5rem 0',
+          }}>
+          เลือกตัวเลข:{' '}
+          <div class={css(numberDisplay)} id="prev">
+            {prevSelected()}
+          </div>
+          {' → '}
+          <div class={css(numberDisplay2)} id="next">
             {selected()}
-          </span>
-        </div>
+          </div>
+        </section>
         <button
           onClick={() => {
             const idx = Math.floor(Math.random() * numbers.length)
