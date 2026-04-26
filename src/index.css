@@ -1,11 +1,12 @@
 @layer reset, base, tokens, recipes, utilities;
 
 body {
-  background: linear-gradient(to bottom right, darkorange, orangered);
+  background: linear-gradient(to bottom right, #2312a3, #23aaa3);
   margin: 8rem;
   font-family: 'Google Sans', sans-serif;
   font-size: 1.1rem;
   min-height: 100dvh;
+  color: antiquewhite;
 }
 
 pre.shiki {

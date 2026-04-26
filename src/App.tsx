@@ -1,12 +1,13 @@
-import { type Component, createEffect, createSignal, Show } from 'solid-js'
+import confetti from '@hiseb/confetti'
+import { type Component, createEffect, createSignal } from 'solid-js'
 import { css, type Styles } from '#panda/css'
 import ShikiCodearea from './components/ShikiCodearea'
 
 const btn1: Styles = {
   bgGradient: 'to-r',
   border: '1px solid black',
-  gradientFrom: 'orange.400',
-  gradientTo: 'orange.600',
+  gradientFrom: 'teal.800',
+  gradientTo: 'teal.400',
   color: '#fff',
   padding: '0.5rem 1rem',
   m: '0.5rem 0',
@@ -14,8 +15,9 @@ const btn1: Styles = {
 
 const h1: Styles = {
   fontSize: '1.5rem',
-  backgroundColor: 'lightpink',
+  backgroundColor: 'teal.800',
   margin: '0.5rem 0',
+  padding: '0.3rem 0.8rem',
 }
 
 const listStyle: Styles = {
@@ -28,42 +30,63 @@ const section: Styles = {
   padding: '1rem',
 }
 
+const randomInts = (num: number, maxInt: number = 10) =>
+  Array.from({ length: num }, () => Math.floor(Math.random() * maxInt))
+
+const numbers = randomInts(20, 100)
+console.log('numbers:', numbers)
 const [name, setName] = createSignal('Solid')
-const [count2, setCount2] = createSignal(2)
+const [selected, setSelected] = createSignal(0)
 
-/**
- * createEffect - สร้าง Effect ที่ทำงานเมื่อ Signal ที่ใช้ภายในเปลี่ยนค่า
- *
- * @param effectFn - ฟังก์ชันในเฟส Compute สำหรับติดตาม Signal และคืนค่า
- * @param applyFn - ฟังก์ชันในเฟส Apply สำหรับทำ Side Effects (รับค่าจาก effectFn)
- * @param options - ออปชันเสริม เช่น { name: 'ชื่อสำหรับ Debug' }
- *
- * @returns Disposable - ฟังก์ชันสำหรับยกเลิก Effect
- */
 createEffect(
-  // 1. Compute Phase: ส่วนนี้ใช้ติดตาม Signal (Tracking)
-  // และคืนค่าผลลัพธ์เพื่อส่งต่อไปยังเฟสถัดไป
-  () => {
-    const currentName = name()
-    console.log('Computing for:', currentName)
-    return currentName
+  // Compute Phase: คืนค่าเฉพาะเมื่อ parity เปลี่ยน (true=odd, false=even)
+  () => selected() % 2 !== 0,
+  // Apply Phase: รันเมื่อ isOdd เปลี่ยนจากค่าเดิม
+  (isOdd, wasOdd) => {
+    if (wasOdd === false && isOdd) {
+      confetti({
+        position: { x: 700, y: 500 },
+        count: 300,
+        size: 1,
+        velocity: 86,
+      })
+    }
   },
-
-  // 2. Apply Phase (effectFn): ส่วนนี้รับค่าจากเฟส Compute
-  // และทำงานกับโลกภายนอก (Side Effects) เช่น DOM หรือ API
-  (val) => {
-    console.log('Applying side effect for:', val)
-    document.title = val
-
-    // สามารถคืนค่า Cleanup function ได้โดยตรงที่นี่ [1], [2]
-    return () => console.log('Cleaning up effect for:', val)
-  },
-
-  // 3. Options
-  { name: 'TitleEffect' },
 )
 
 const App: Component = () => {
+  /**
+   * createEffect - สร้าง Effect ที่ทำงานเมื่อ Signal ที่ใช้ภายในเปลี่ยนค่า
+   *
+   * @param effectFn - ฟังก์ชันในเฟส Compute สำหรับติดตาม Signal และคืนค่า
+   * @param applyFn - ฟังก์ชันในเฟส Apply สำหรับทำ Side Effects (รับค่าจาก effectFn)
+   * @param options - ออปชันเสริม เช่น { name: 'ชื่อสำหรับ Debug' }
+   *
+   * @returns Disposable - ฟังก์ชันสำหรับยกเลิก Effect
+   */
+  createEffect(
+    // 1. Compute Phase: ส่วนนี้ใช้ติดตาม Signal (Tracking)
+    // และคืนค่าผลลัพธ์เพื่อส่งต่อไปยังเฟสถัดไป
+    () => {
+      const currentName = name()
+      console.log('Computing for:', currentName)
+      return currentName
+    },
+
+    // 2. Apply Phase (effectFn): ส่วนนี้รับค่าจากเฟส Compute
+    // และทำงานกับโลกภายนอก (Side Effects) เช่น DOM หรือ API
+    (val) => {
+      console.log('Applying side effect for:', val)
+      document.title = val
+
+      // สามารถคืนค่า Cleanup function ได้โดยตรงที่นี่ [1], [2]
+      return () => console.log('Cleaning up effect for:', val)
+    },
+
+    // 3. Options
+    { name: 'TitleEffect' },
+  )
+
   return (
     <>
       <h1 class={css(h1)}>ใน SolidJS 2.0: มีการแยกเฟส (Split Phases)</h1>
@@ -140,48 +163,56 @@ createEffect(
       </section>
 
       <section class={css(section)} id="example2">
-        <h1 class={css(h1)}>Example2: createEffect() Solid 2.0 Way</h1>
-        <p>
-          จาก Example#1 SolidJs 2.0 มีการเปลี่ยนแปลง api สำหรับ createEffect เป็น 2
-          phase คือ computed และ apply คำถามคือ ทำไมถึงต้องทำแบบนี้
-        </p>
-        <p>
-          เพื่อยกตัวอย่างให้เห็นภาพ สมมุติเรามีโจทย์ว่า จะให้ระบบ effect ในกรณีที่
-          สถานะความเป็นเลขคู่เปลี่ยนเท่านั้น
-        </p>
+        <h1 class={css(h1)}>Example2: Skip Apply ผ่าน Split-Phase + Confetti</h1>
         <br />
-        <p>ตัวอย่างที่ 1: Compute แล้วไม่ Apply (Skip by Equality)</p>
-        <p>โจทย์: มีตัวเลขสุ่มจำนวนเต็ม 20 ตัว</p>
+        <p>
+          สาธิต Split-Phase: Detect การเปลี่ยน parity (even→odd) และยิง confetti
+        </p>
+        <p>กดสุ่มตัวเลขจากรายการ — confetti จะแสดงเฉพาะเมื่อเปลี่ยนจากเลขคู่ไปเลขคี่</p>
+        <p>
+          รายการตัวเลข:{' '}
+          <span class={css({ color: 'darksalmon', fontWeight: 'bold' })}>
+            [{numbers.join(', ')}]
+          </span>
+        </p>
         <ShikiCodearea
           id="example2"
           initialCode={`
 import { createEffect, createSignal } from "solid-js";
+import confetti from "@hiseb/confetti";
 
-const [count, setCount] = createSignal(0);
+const numbers = [...]; // 20 random ints
+const [selected, setSelected] = createSignal(0);
 
 createEffect(
-  // 1. Compute Phase: คืนค่าว่าเป็นเลขคู่หรือไม่ (true/false)
-  () => count() % 2 === 0, 
-  
-  // 2. Apply Phase: จะรันเฉพาะเมื่อค่าที่ Compute คืนมา "เปลี่ยนไป" เท่านั้น
-  (isEven) => {
-    console.log("Apply รันแล้ว! ค่าสถานะเลขคู่เปลี่ยนเป็น:", isEven);
-    // ถ้าเปลี่ยนจาก 2 ไป 4: Compute ได้ true เหมือนเดิม -> Apply จะไม่ถูกรัน [1]
-  }
+  // 1. Compute Phase: คืนค่า isOdd (boolean) — เช็ค parity
+  () => selected() % 2 !== 0,
+
+  // 2. Apply Phase: รันเมื่อ isOdd เปลี่ยนค่าเท่านั้น
+  //    wasOdd = ค่าจากรอบก่อน, isOdd = ค่าปัจจุบัน
+  (isOdd, wasOdd) => {
+    if (wasOdd === false && isOdd === true) {
+      // Transition: even → odd → show confetti!
+      confetti({ position: { x: 0.5, y: 0.5 }, count: 200, size: 8, velocity: 16 })
+    }
+  },
 );
 `}
           lang="typescript"
           theme="laserwave"></ShikiCodearea>
-        <p>count2: {count2()}</p>
         <div>
-          <Show when={true}>xx</Show>
+          เลือกตัวเลขปัจจุบัน:{' '}
+          <span class={css({ fontWeight: 'bold', color: 'gold' })}>
+            {selected()}
+          </span>
         </div>
         <button
           onClick={() => {
-            setCount2(count2() + 1)
+            const idx = Math.floor(Math.random() * numbers.length)
+            setSelected(numbers[idx])
           }}
           class={css(btn1)}>
-          เพิ่มทีละ 1
+          สุ่มตัวเลขจากรายการ
         </button>
       </section>
     </>
