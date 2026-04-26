@@ -33,6 +33,8 @@ const section: Styles = {
 const numberDisplay: Styles = {
   display: 'inline-grid',
   aspectRatio: 1,
+  fontSize: '0.88rem',
+  fontWeight: '600',
   placeItems: 'center',
   padding: '6px',
   width: '30px',
@@ -53,21 +55,6 @@ const [name, setName] = createSignal('Solid')
 const [selected, setSelected] = createSignal(0)
 const [prevSelected, setPrevSelected] = createSignal(0)
 
-createEffect(
-  () => selected(),
-  (curr, prev) => {
-    setPrevSelected(prev ?? 0)
-    if (prev !== undefined && prev % 2 === 0 && curr % 2 !== 0) {
-      confetti({
-        position: { x: 700, y: 500 },
-        count: 300,
-        size: 1,
-        velocity: 106,
-      })
-    }
-  },
-)
-
 const App: Component = () => {
   /**
    * createEffect - สร้าง Effect ที่ทำงานเมื่อ Signal ที่ใช้ภายในเปลี่ยนค่า
@@ -78,19 +65,21 @@ const App: Component = () => {
    *
    * @returns Disposable - ฟังก์ชันสำหรับยกเลิก Effect
    */
+
+  /* Example 1 */
   createEffect(
     // 1. Compute Phase: ส่วนนี้ใช้ติดตาม Signal (Tracking)
     // และคืนค่าผลลัพธ์เพื่อส่งต่อไปยังเฟสถัดไป
     () => {
       const currentName = name()
-      console.log('Computing for:', currentName)
+      // console.log('Computing for:', currentName)
       return currentName
     },
 
     // 2. Apply Phase (effectFn): ส่วนนี้รับค่าจากเฟส Compute
     // และทำงานกับโลกภายนอก (Side Effects) เช่น DOM หรือ API
     (val) => {
-      console.log('Applying side effect for:', val)
+      // console.log('Applying side effect for:', val)
       document.title = val
 
       // สามารถคืนค่า Cleanup function ได้โดยตรงที่นี่ [1], [2]
@@ -99,6 +88,26 @@ const App: Component = () => {
 
     // 3. Options
     { name: 'TitleEffect' },
+  )
+
+  /* Example 2 */
+  createEffect(
+    (prev) => {
+      console.log('Applying computed phase for:', prev)
+      return selected()
+    },
+    (curr, prev) => {
+      console.log('Applying apply phase for:', { curr, prev })
+      setPrevSelected(prev ?? 0)
+      if (prev !== undefined && prev % 2 === 0 && curr % 2 !== 0) {
+        confetti({
+          position: { x: 700, y: 500 },
+          count: 300,
+          size: 1,
+          velocity: 106,
+        })
+      }
+    },
   )
 
   return (
@@ -195,20 +204,27 @@ createEffect(
 const [selected, setSelected] = createSignal(0)
 const [prevSelected, setPrevSelected] = createSignal(0)
 
+// Effect แยก: track prev number สำหรับแสดงผล
 createEffect(
   () => selected(),
-  (curr, prev) => {
-    setPrevSelected(prev ?? 0)
-    if (prev !== undefined && prev % 2 === 0 && curr % 2 !== 0) {
-      confetti({
-        position: { x: 700, y: 500 },
-        count: 300,
-        size: 1,
-        velocity: 106,
-      })
+  (curr, prev) => { setPrevSelected(prev ?? 0) },
+)
+
+// Effect หลัก: Compute Phase เป็น gate/filter
+createEffect(
+  // Compute Phase: คืน parity 'even'|'odd' เท่านั้น
+  // ถ้า selected เปลี่ยนแต่ parity เดิม → คืนค่าเดิม → Apply ถูกข้าม!
+  //   เช่น 2→4: 'even'→'even' → ข้าม Apply
+  //   เช่น 2→3: 'even'→'odd'  → รัน Apply
+  () => (selected() % 2 !== 0 ? 'odd' : 'even') as 'odd' | 'even',
+
+  // Apply Phase: รันเมื่อ parity เปลี่ยนเท่านั้น
+  (parity, prevParity) => {
+    if (prevParity === 'even' && parity === 'odd') {
+      confetti({ position: { x: 0.5, y: 0.5 }, count: 300, size: 8, velocity: 16 })
     }
   },
-) 
+)
 `}
           lang="typescript"
           theme="laserwave"></ShikiCodearea>
