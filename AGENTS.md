@@ -95,11 +95,11 @@ createEffect<T>(
 
 ### Key changes from v1.x
 
-| v1.x | v2.0 |
-|------|------|
+| v1.x                                         | v2.0                                             |
+| -------------------------------------------- | ------------------------------------------------ |
 | Single callback with tracking + side effects | Two separate callbacks: `compute` and `effectFn` |
-| `createEffect(fn, value?)` | `createEffect(compute, effectFn, options?)` |
-| Cleanup returned from the same function | Cleanup returned from `effectFn` (Apply phase) |
+| `createEffect(fn, value?)`                   | `createEffect(compute, effectFn, options?)`      |
+| Cleanup returned from the same function      | Cleanup returned from `effectFn` (Apply phase)   |
 
 ### Split-Phase behavior
 
@@ -134,3 +134,4 @@ Also check `node_modules/solid-js/types/client/hydration.d.ts` for any hydration
 - If a type file does not exist at an expected path, report the missing file rather than guessing
 - Do not fall back to SolidJS v1.x patterns unless confirmed identical in the v2.0 types
 - When in doubt, ask for clarification or refer to the official documentation and type files rather than making assumptions based on prior versions.
+- "Always follow the linting rules defined in oxlint.config.ts and tsconfig.app.json. Specifically, avoid negated conditions (prefer flipping branches), use early returns to reduce nesting, and strictly adhere to TypeScript best practices used in this project."
