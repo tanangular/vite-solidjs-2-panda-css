@@ -1,5 +1,10 @@
 import confetti from '@hiseb/confetti'
-import { type Component, createEffect, createMemo, createSignal } from 'solid-js'
+import {
+  type Component,
+  createEffect,
+  createMemo,
+  createSignal,
+} from 'solid-js'
 import { css, type Styles } from '#panda/css'
 import ShikiCodearea from './components/ShikiCodearea'
 
@@ -65,17 +70,19 @@ const App: Component = () => {
    * @param options - ออปชันเสริม เช่น { name: 'ชื่อสำหรับ Debug' }
    *
    * @returns Disposable - ฟังก์ชันสำหรับยกเลิก Effect
-  */
+   */
 
   /* Example 2 */
-  const selectedTransition = createMemo((prev: { curr: number; prev: number } | undefined) => {
-    const curr = selected()
+  const selectedTransition = createMemo(
+    (prev: { curr: number; prev: number } | undefined) => {
+      const curr = selected()
 
-    return {
-      curr,
-      prev: prev?.curr ?? 0,
-    }
-  })
+      return {
+        curr,
+        prev: prev?.curr ?? 0,
+      }
+    },
+  )
 
   const prevSelected = () => selectedTransition().prev
 
@@ -145,31 +152,32 @@ const App: Component = () => {
         <ShikiCodearea
           id="example2"
           initialCode={`
-const [selected, setSelected] = createSignal(0)
-
 const selectedTransition = createMemo((prev: { curr: number; prev: number } | undefined) => {
-  const curr = selected()
+    const curr = selected()
 
-  return { curr, prev: prev?.curr ?? 0 }
-})
-
-const prevSelected = () => selectedTransition().prev
-
-// Effect หลัก: Compute Phase เป็น gate/filter
-createEffect(
-  // Compute Phase: คืน parity 'even'|'odd' เท่านั้น
-  // ถ้า selected เปลี่ยนแต่ parity เดิม → คืนค่าเดิม → Apply ถูกข้าม!
-  //   เช่น 2→4: 'even'→'even' → ข้าม Apply
-  //   เช่น 2→3: 'even'→'odd'  → รัน Apply
-  () => (selected() % 2 !== 0 ? 'odd' : 'even') as 'odd' | 'even',
-
-  // Apply Phase: รันเมื่อ parity เปลี่ยนเท่านั้น
-  (parity, prevParity) => {
-    if (prevParity === 'even' && parity === 'odd') {
-      confetti({ position: { x: 0.5, y: 0.5 }, count: 300, size: 8, velocity: 16 })
+    return {
+      curr,
+      prev: prev?.curr ?? 0,
     }
-  },
-)
+  })
+
+  const prevSelected = () => selectedTransition().prev
+
+  createEffect(
+    () => getParity(selected()),
+    (parity, prevParity) => {
+      if (prevParity !== 'even' || parity !== 'odd') {
+        return
+      }
+
+      confetti({
+        position: { x: 700, y: 500 },
+        count: 300,
+        size: 1,
+        velocity: 106,
+      })
+    },
+  )
 `}
           lang="typescript"
           theme="laserwave"></ShikiCodearea>
