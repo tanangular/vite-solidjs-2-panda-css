@@ -1,5 +1,5 @@
 import confetti from '@hiseb/confetti'
-import { type Component, createEffect, createSignal } from 'solid-js'
+import { type Component, createEffect, createMemo, createSignal } from 'solid-js'
 import { css, type Styles } from '#panda/css'
 import ShikiCodearea from './components/ShikiCodearea'
 
@@ -50,11 +50,12 @@ const numberDisplay2: Styles = {
 const randomInts = (num: number, maxInt: number = 10) =>
   Array.from({ length: num }, () => Math.floor(Math.random() * maxInt))
 
-const numbers = randomInts(20, 100)
-const [name, setName] = createSignal('Solid')
-const [selected, setSelected] = createSignal(0)
-const [prevSelected, setPrevSelected] = createSignal(0)
+type Parity = 'even' | 'odd'
 
+const getParity = (value: number): Parity => (value % 2 === 0 ? 'even' : 'odd')
+
+const numbers = randomInts(20, 100)
+const [selected, setSelected] = createSignal(1)
 const App: Component = () => {
   /**
    * createEffect - สร้าง Effect ที่ทำงานเมื่อ Signal ที่ใช้ภายในเปลี่ยนค่า
@@ -64,49 +65,33 @@ const App: Component = () => {
    * @param options - ออปชันเสริม เช่น { name: 'ชื่อสำหรับ Debug' }
    *
    * @returns Disposable - ฟังก์ชันสำหรับยกเลิก Effect
-   */
-
-  /* Example 1 */
-  createEffect(
-    // 1. Compute Phase: ส่วนนี้ใช้ติดตาม Signal (Tracking)
-    // และคืนค่าผลลัพธ์เพื่อส่งต่อไปยังเฟสถัดไป
-    () => {
-      const currentName = name()
-      // console.log('Computing for:', currentName)
-      return currentName
-    },
-
-    // 2. Apply Phase (effectFn): ส่วนนี้รับค่าจากเฟส Compute
-    // และทำงานกับโลกภายนอก (Side Effects) เช่น DOM หรือ API
-    (val) => {
-      // console.log('Applying side effect for:', val)
-      document.title = val
-
-      // สามารถคืนค่า Cleanup function ได้โดยตรงที่นี่ [1], [2]
-      return () => console.log('Cleaning up effect for:', val)
-    },
-
-    // 3. Options
-    { name: 'TitleEffect' },
-  )
+  */
 
   /* Example 2 */
+  const selectedTransition = createMemo((prev: { curr: number; prev: number } | undefined) => {
+    const curr = selected()
+
+    return {
+      curr,
+      prev: prev?.curr ?? 0,
+    }
+  })
+
+  const prevSelected = () => selectedTransition().prev
+
   createEffect(
-    (prev) => {
-      console.log('Applying computed phase for:', prev)
-      return selected()
-    },
-    (curr, prev) => {
-      console.log('Applying apply phase for:', { curr, prev })
-      setPrevSelected(prev ?? 0)
-      if (prev !== undefined && prev % 2 === 0 && curr % 2 !== 0) {
-        confetti({
-          position: { x: 700, y: 500 },
-          count: 300,
-          size: 1,
-          velocity: 106,
-        })
+    () => getParity(selected()),
+    (parity, prevParity) => {
+      if (prevParity !== 'even' || parity !== 'odd') {
+        return
       }
+
+      confetti({
+        position: { x: 700, y: 500 },
+        count: 300,
+        size: 1,
+        velocity: 106,
+      })
     },
   )
 
@@ -144,49 +129,8 @@ const App: Component = () => {
         ไปเลย
       </p>
 
-      <section class={css(section)} id="example1">
-        <h1 class={css(h1)}>Example1: Basic createEffect()</h1>
-        <ShikiCodearea
-          id="example1"
-          initialCode={`
-createEffect(
-  // 1. Compute Phase: ส่วนนี้ใช้ติดตาม Signal (Tracking)
-  // และคืนค่าผลลัพธ์เพื่อส่งต่อไปยังเฟสถัดไป
-  () => {
-    const currentName = name()
-    console.log('Computing for:', currentName)
-    return currentName
-  },
-
-  // 2. Apply Phase (effectFn): ส่วนนี้รับค่าจากเฟส Compute
-  // และทำงานกับโลกภายนอก (Side Effects) เช่น DOM หรือ API
-  (val) => {
-    console.log('Applying side effect for:', val)
-    document.title = val
-
-    // สามารถคืนค่า Cleanup function ได้โดยตรงที่นี่ [1], [2]
-    return () => console.log('Cleaning up effect for:', val)
-  },
-
-  // 3. Options
-  { name: 'TitleEffect' },
-)
-`}
-          lang="typescript"
-          theme="laserwave"
-        />
-        <button
-          onClick={() => {
-            setName(name() + ' is JS framework')
-          }}
-          class={css(btn1)}>
-          กดเพื่อเปลี่ยนชื่อและดูผลลัพธ์ใน console และ title ของหน้าเว็บ
-        </button>
-        <p>{name()}</p>
-      </section>
-
       <section class={css(section)} id="example2">
-        <h1 class={css(h1)}>Example2: Skip Apply ผ่าน Split-Phase + Confetti</h1>
+        <h1 class={css(h1)}>Example1: Skip Apply ผ่าน Split-Phase + Confetti</h1>
         <br />
         <p>
           สาธิต Split-Phase: Detect การเปลี่ยน parity (even→odd) และยิง confetti
@@ -202,13 +146,14 @@ createEffect(
           id="example2"
           initialCode={`
 const [selected, setSelected] = createSignal(0)
-const [prevSelected, setPrevSelected] = createSignal(0)
 
-// Effect แยก: track prev number สำหรับแสดงผล
-createEffect(
-  () => selected(),
-  (curr, prev) => { setPrevSelected(prev ?? 0) },
-)
+const selectedTransition = createMemo((prev: { curr: number; prev: number } | undefined) => {
+  const curr = selected()
+
+  return { curr, prev: prev?.curr ?? 0 }
+})
+
+const prevSelected = () => selectedTransition().prev
 
 // Effect หลัก: Compute Phase เป็น gate/filter
 createEffect(

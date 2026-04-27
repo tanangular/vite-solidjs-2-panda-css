@@ -1,9 +1,9 @@
+import devtools from 'solid-devtools/vite'
 import { defineConfig } from 'vite'
 import solidPlugin from 'vite-plugin-solid'
-import devtools from 'solid-devtools/vite'
 
-export default defineConfig({
-	plugins: [ devtools({
+export default defineConfig(({ command }) => ({
+	plugins: [ command === 'serve' && devtools({
 		autoname: true,
 	}), solidPlugin() ],
 	resolve: {
@@ -21,4 +21,4 @@ export default defineConfig({
 	optimizeDeps: {
 		exclude: [ 'solid-js', '@solidjs/web', 'solid-js/store' ],
 	},
-})
+}))
