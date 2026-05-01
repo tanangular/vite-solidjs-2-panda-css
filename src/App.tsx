@@ -61,18 +61,15 @@ const getParity = (value: number): Parity => (value % 2 === 0 ? 'even' : 'odd')
 
 const numbers = randomInts(20, 100)
 const [selected, setSelected] = createSignal(1)
-const App: Component = () => {
-  /**
-   * createEffect - สร้าง Effect ที่ทำงานเมื่อ Signal ที่ใช้ภายในเปลี่ยนค่า
-   *
-   * @param effectFn - ฟังก์ชันในเฟส Compute สำหรับติดตาม Signal และคืนค่า
-   * @param applyFn - ฟังก์ชันในเฟส Apply สำหรับทำ Side Effects (รับค่าจาก effectFn)
-   * @param options - ออปชันเสริม เช่น { name: 'ชื่อสำหรับ Debug' }
-   *
-   * @returns Disposable - ฟังก์ชันสำหรับยกเลิก Effect
-   */
 
-  /* Example 2 */
+const App: Component = () => {
+  const [bundleDivider, setBundleDivider] = createSignal(5)
+  const [bundleResult, setBundleResult] = createSignal('100 / 5 = 20')
+  const [bundleError, setBundleError] = createSignal('')
+
+  const [count, setCount] = createSignal(0)
+  const doubled = createMemo((prev: number | undefined) => (prev ?? 0) + count())
+
   const selectedTransition = createMemo(
     (prev: { curr: number; prev: number } | undefined) => {
       const curr = selected()
@@ -99,6 +96,35 @@ const App: Component = () => {
         size: 1,
         velocity: 106,
       })
+    },
+  )
+
+  createEffect(
+    () => {
+      const divider = bundleDivider()
+
+      if (divider === 0) {
+        throw new Error('หารด้วย 0 ไม่ได้')
+      }
+
+      return {
+        divider,
+        result: 100 / divider,
+      }
+    },
+    {
+      effect: ({ divider, result }) => {
+        setBundleError('')
+        setBundleResult(`100 / ${divider} = ${result}`)
+
+        return () => {
+          setBundleResult('กำลังคำนวณค่าใหม่...')
+        }
+      },
+      error: (err, cleanup) => {
+        cleanup()
+        setBundleError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดที่ไม่รู้จัก')
+      },
     },
   )
 
@@ -153,31 +179,31 @@ const App: Component = () => {
           id="example2"
           initialCode={`
 const selectedTransition = createMemo((prev: { curr: number; prev: number } | undefined) => {
-    const curr = selected()
+  const curr = selected()
 
-    return {
-      curr,
-      prev: prev?.curr ?? 0,
+  return {
+    curr,
+    prev: prev?.curr ?? 0,
+  }
+})
+
+const prevSelected = () => selectedTransition().prev
+
+createEffect(
+  () => getParity(selected()),
+  (parity, prevParity) => {
+    if (prevParity !== 'even' || parity !== 'odd') {
+      return
     }
-  })
 
-  const prevSelected = () => selectedTransition().prev
-
-  createEffect(
-    () => getParity(selected()),
-    (parity, prevParity) => {
-      if (prevParity !== 'even' || parity !== 'odd') {
-        return
-      }
-
-      confetti({
-        position: { x: 700, y: 500 },
-        count: 300,
-        size: 1,
-        velocity: 106,
-      })
-    },
-  )
+    confetti({
+      position: { x: 700, y: 500 },
+      count: 300,
+      size: 1,
+      velocity: 106,
+    })
+  },
+)
 `}
           lang="typescript"
           theme="laserwave"></ShikiCodearea>
@@ -204,6 +230,231 @@ const selectedTransition = createMemo((prev: { curr: number; prev: number } | un
           }}
           class={css(btn1)}>
           สุ่มตัวเลขจากรายการ
+        </button>
+      </section>
+
+      <section class={css(section)} id="effect-bundle">
+        <h1 class={css(h1)}>Example2: createEffect แบบ EffectBundle</h1>
+        <br />
+        <p>
+          `EffectBundle` คือรูปแบบที่ส่ง object เป็นพารามิเตอร์ตัวที่ 2 ของ `createEffect`
+          โดยแยก handler ออกเป็น `effect` สำหรับงานปกติ และ `error`
+          สำหรับจัดการข้อผิดพลาด
+        </p>
+        <ol class={css(listStyle)}>
+          <li>
+            `effect`: ทำงานเมื่อ Compute Phase คืนค่าสำเร็จ และรับค่าที่ compute ส่งมา
+          </li>
+          <li>
+            `error`: ทำงานเมื่อ Compute หรือ Effect โยน error และได้รับ `cleanup`
+            เพื่อเก็บงานเก่าก่อนจัดการ error
+          </li>
+        </ol>
+        <p>
+          ตัวอย่างนี้คำนวณ <strong>100 / ตัวหาร</strong> ถ้าเลือกตัวหารเป็น 0 จะ throw
+          error แล้วส่งไปที่ `error` handler ของ EffectBundle
+        </p>
+        <ShikiCodearea
+          id="effect-bundle-code"
+          initialCode={`export type EffectBundle<Prev, Next extends Prev = Prev> = {
+  effect: EffectFunction<Prev, Next>
+  error: (err: unknown, cleanup: () => void) => void
+}
+
+const [divider, setDivider] = createSignal(5)
+const [result, setResult] = createSignal('100 / 5 = 20')
+const [error, setError] = createSignal('')
+
+createEffect(
+  () => {
+    const value = divider()
+
+    if (value === 0) {
+      throw new Error('หารด้วย 0 ไม่ได้')
+    }
+
+    return {
+      divider: value,
+      result: 100 / value,
+    }
+  },
+  {
+    effect: ({ divider, result }) => {
+      setError('')
+      setResult(\`100 / \${divider} = \${result}\`)
+
+      return () => {
+        setResult('กำลังคำนวณค่าใหม่...')
+      }
+    },
+    error: (err, cleanup) => {
+      cleanup()
+      setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดที่ไม่รู้จัก')
+    },
+  },
+)`}
+          lang="typescript"
+          theme="laserwave"></ShikiCodearea>
+        <section
+          style={{
+            display: 'flex',
+            'align-items': 'center',
+            gap: '6px',
+            margin: '0.5rem 0',
+          }}>
+          ตัวหาร:{' '}
+          <div class={css(numberDisplay2)} id="bundle-divider">
+            {bundleDivider()}
+          </div>
+        </section>
+        <p>
+          ผลลัพธ์:{' '}
+          <span class={css({ color: 'lightgreen', fontWeight: 'bold' })}>
+            {bundleResult()}
+          </span>
+        </p>
+        <p>
+          Error:{' '}
+          <span class={css({ color: 'salmon', fontWeight: 'bold' })}>
+            {bundleError() || '-'}
+          </span>
+        </p>
+        <button onClick={() => setBundleDivider(5)} class={css(btn1)}>
+          หารด้วย 5
+        </button>
+        <button onClick={() => setBundleDivider(4)} class={css(btn1)}>
+          หารด้วย 4
+        </button>
+        <button onClick={() => setBundleDivider(0)} class={css(btn1)}>
+          ลองหารด้วย 0
+        </button>
+      </section>
+
+      <section class={css(section)} id="create-signal">
+        <h1 class={css(h1)}>Example3: createSignal ใน SolidJS 2.0</h1>
+        <br />
+        <p>
+          `createSignal` คือ primitive พื้นฐานสุดของ SolidJS สำหรับสร้างสถานะแบบ Reactive
+          คืนค่าเป็น tuple `[get, set]` โดย `get` เป็น Accessor (ฟังก์ชันอ่านค่า)
+          และ `set` เป็น Setter (ฟังก์ชันเขียนค่า)
+        </p>
+
+        <h2 class={css({ ...h1, fontSize: '1.1rem', backgroundColor: 'teal.600' })}>
+          3 Overloads ของ createSignal
+        </h2>
+        <ShikiCodearea
+          id="create-signal-overloads"
+          initialCode={`// Overload 1: ไม่ส่งค่าเริ่มต้น → type จะ extend undefined
+export declare function createSignal<T>(): Signal<T | undefined>
+
+// Overload 2: ส่งค่าเริ่มต้น (ค่าธรรมดา ไม่ใช่ฟังก์ชัน)
+export declare function createSignal<T>(
+  value: Exclude<T, Function>,
+  options?: SignalOptions<T>,
+): Signal<T>
+
+// Overload 3: ส่งฟังก์ชัน → สร้าง Writable Memo
+export declare function createSignal<T>(
+  fn: ComputeFunction<T>,
+  options?: SignalOptions<T> & MemoOptions<T>,
+): Signal<T>`}
+          lang="typescript"
+          theme="github-dark"
+        />
+
+        <h2 class={css({ ...h1, fontSize: '1.1rem', backgroundColor: 'teal.600' })}>
+          SignalOptions
+        </h2>
+        <ShikiCodearea
+          id="signal-options"
+          initialCode={`export interface SignalOptions<T> {
+  /** ชื่อสำหรับ Debug (dev mode เท่านั้น) */
+  name?: string
+  /** ฟังก์ชันเปรียบเทียบความเท่ากัน หรือ false เพื่อแจ้งทุกครั้ง */
+  equals?: false | ((prev: T, next: T) => boolean)
+  /** ระงับการเตือน dev-mode เมื่อเขียนใน owned scope */
+  ownedWrite?: boolean
+  /** เรียกเมื่อ signal ไม่มี subscriber แล้ว */
+  unobserved?: () => void
+}`}
+          lang="typescript"
+          theme="github-dark"
+        />
+
+        <h2 class={css({ ...h1, fontSize: '1.1rem', backgroundColor: 'teal.600' })}>
+          Setter Type
+        </h2>
+        <ShikiCodearea
+          id="setter-type"
+          initialCode={`export type Setter<in out T> = {
+  // กรณี T รวม undefined: เรียกได้โดยไม่ส่ง argument → undefined
+  <U extends T>(...args: undefined extends T
+    ? []
+    : [value: Exclude<U, Function> | ((prev: T) => U)]
+  ): undefined extends T ? undefined : U
+
+  // ส่งฟังก์ชัน updater: (prev: T) => U
+  <U extends T>(value: (prev: T) => U): U
+
+  // ส่งค่าธรรมดา (ไม่ใช่ Function)
+  <U extends T>(value: Exclude<U, Function>): U
+
+  // ส่งค่าหรือฟังก์ชัน
+  <U extends T>(value: Exclude<U, Function> | ((prev: T) => U)): U
+}`}
+          lang="typescript"
+          theme="github-dark"
+        />
+
+        <h2 class={css({ ...h1, fontSize: '1.1rem', backgroundColor: 'teal.600' })}>
+          Demo: การใช้ createSignal และ Setter
+        </h2>
+        <p>
+          กดปุ่มเพื่อเพิ่มค่า — แสดง count และ doubled (ผ่าน createMemo)
+        </p>
+        <ShikiCodearea
+          id="create-signal-demo"
+          initialCode={`const [count, setCount] = createSignal(0)
+
+// createMemo ใช้อ่าน count() แล้วคำนวณค่าใหม่
+const doubled = createMemo(
+  (prev: number | undefined) => (prev ?? 0) + count()
+)
+
+// Setter แบบฟังก์ชัน: รับค่าก่อนหน้า คืนค่าใหม่
+setCount((prev) => prev + 1)
+
+// Setter แบบค่าธรรมดา: ตั้งค่าโดยตรง
+setCount(0)`}
+          lang="typescript"
+          theme="laserwave"
+        />
+
+        <section
+          style={{
+            display: 'flex',
+            'align-items': 'center',
+            gap: '12px',
+            margin: '0.5rem 0',
+          }}>
+          <span>
+            Count:{' '}
+            <span class={css({ color: 'lightgreen', fontWeight: 'bold' })}>
+              {count()}
+            </span>
+          </span>
+          <span>
+            Doubled:{' '}
+            <span class={css({ color: 'skyblue', fontWeight: 'bold' })}>
+              {doubled()}
+            </span>
+          </span>
+        </section>
+        <button onClick={() => setCount((prev) => prev + 1)} class={css(btn1)}>
+          +1 (Setter แบบฟังก์ชัน)
+        </button>
+        <button onClick={() => setCount(0)} class={css(btn1)}>
+          รีเซ็ต (Setter แบบค่าธรรมดา)
         </button>
       </section>
     </>
