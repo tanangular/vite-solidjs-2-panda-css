@@ -1,39 +1,42 @@
 {
   "name": "vite-solidjs-2-panda-css",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "First Time with SolidJs 2.0 + Panda CSS + Vite",
   "license": "MIT",
   "author": "tanangular@gmail.com",
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "codex:bridge": "node scripts/codex-responses-bridge.mjs",
     "dev": "vite",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "lint": "oxlint .",
     "prepare": "panda codegen",
     "serve": "vite preview",
-    "slim": "slim start pandacss --port 3000",
+    "slim": "slim start pandas --port 3000",
     "start": "vite"
   },
   "dependencies": {
     "@hiseb/confetti": "^2.1.0",
-    "@solidjs/web": "2.0.0-beta.7",
-    "solid-js": "2.0.0-beta.7"
+    "@solidjs/web": "2.0.0-beta.13",
+    "solid-js": "2.0.0-beta.13"
   },
   "devDependencies": {
-    "@pandacss/dev": "^1.10.0",
+    "@pandacss/dev": "^1.11.1",
     "@shikijs/transformers": "^4.0.2",
     "eslint-plugin-jsx-a11y": "^6.10.2",
-    "eslint-plugin-no-only-tests": "^3.3.0",
+    "eslint-plugin-no-only-tests": "^3.4.0",
     "eslint-plugin-perfectionist": "^5.9.0",
     "eslint-plugin-unused-imports": "^4.4.1",
     "oxfmt": "^0.42.0",
-    "oxlint": "^1.61.0",
+    "oxlint": "^1.65.0",
     "shiki": "^4.0.2",
     "solid-devtools": "^0.34.5",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.22.0",
     "typescript": "^6.0.3",
-    "vite": "^8.0.10",
+    "vite": "^8.0.13",
     "vite-plugin-solid": "3.0.0-next.5"
   }
 }

@@ -1,259 +1,209 @@
-import confetti from '@hiseb/confetti'
-import { type Component, createEffect, createSignal } from 'solid-js'
-import { css, type Styles } from '#panda/css'
-import ShikiCodearea from './components/ShikiCodearea'
+import type { JSX } from '@solidjs/web'
+import { type Component, createSignal } from 'solid-js'
 
-const btn1: Styles = {
-  bgGradient: 'to-r',
-  border: '1px solid black',
-  gradientFrom: 'teal.800',
-  gradientTo: 'teal.400',
-  color: '#fff',
-  padding: '0.5rem 1rem',
-  m: '0.5rem 0',
+type DoubleState = {
+  value: number
+  prevValue?: number
 }
 
-const h1: Styles = {
-  fontSize: '1.5rem',
-  backgroundColor: 'teal.800',
-  margin: '0.5rem 0',
-  padding: '0.3rem 0.8rem',
+const shellStyle: JSX.CSSProperties = {
+  'min-height': '100vh',
+  display: 'grid',
+  padding: '32px',
+  color: '#172033',
 }
 
-const listStyle: Styles = {
-  listStyle: 'outside',
+const panelStyle: JSX.CSSProperties = {
+  width: 'min(920px, 100%)',
+  margin: 'auto',
+  display: 'grid',
+  gap: '24px',
+  padding: '54px',
+  'border-radius': '28px',
+  background: 'rgba(255, 255, 255, 0.82)',
+  'backdrop-filter': 'blur(16px)',
+  'box-shadow': '0 24px 80px rgba(23, 32, 51, 0.12)',
 }
 
-const section: Styles = {
-  marginBlockStart: '3rem',
-  border: '1px dashed black',
-  padding: '1rem',
+const metricGridStyle: JSX.CSSProperties = {
+  display: 'grid',
+  gap: '16px',
+  'grid-template-columns': 'repeat(auto-fit, minmax(180px, 1fr))',
 }
 
-const numberDisplay: Styles = {
-  display: 'inline-grid',
-  aspectRatio: 1,
-  fontSize: '0.88rem',
-  fontWeight: '600',
-  placeItems: 'center',
-  padding: '6px',
-  width: '30px',
-  height: '30px',
-  backgroundColor: 'darkblue',
+const metricCardStyle: JSX.CSSProperties = {
+  padding: '18px 20px',
+  'border-radius': '20px',
+  background: 'linear-gradient(180deg, #ffffff 0%, #f7f3ee 100%)',
+  border: '1px solid rgba(23, 32, 51, 0.08)',
+  'box-shadow': '0 10px 30px rgba(23, 32, 51, 0.06)',
 }
 
-const numberDisplay2: Styles = {
-  ...numberDisplay,
-  backgroundColor: 'pink.500',
+const buttonRowStyle: JSX.CSSProperties = {
+  display: 'flex',
+  gap: '14px',
+  'flex-wrap': 'wrap',
 }
 
-const randomInts = (num: number, maxInt: number = 10) =>
-  Array.from({ length: num }, () => Math.floor(Math.random() * maxInt))
-
-const numbers = randomInts(20, 100)
-const [name, setName] = createSignal('Solid')
-const [selected, setSelected] = createSignal(0)
-const [prevSelected, setPrevSelected] = createSignal(0)
+const baseButtonStyle: JSX.CSSProperties = {
+  appearance: 'none',
+  border: 'none',
+  'border-radius': '999px',
+  padding: '14px 20px',
+  'font-size': '15px',
+  'font-weight': 700,
+  cursor: 'pointer',
+  transition: 'transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease',
+}
 
 const App: Component = () => {
-  /**
-   * createEffect - สร้าง Effect ที่ทำงานเมื่อ Signal ที่ใช้ภายในเปลี่ยนค่า
-   *
-   * @param effectFn - ฟังก์ชันในเฟส Compute สำหรับติดตาม Signal และคืนค่า
-   * @param applyFn - ฟังก์ชันในเฟส Apply สำหรับทำ Side Effects (รับค่าจาก effectFn)
-   * @param options - ออปชันเสริม เช่น { name: 'ชื่อสำหรับ Debug' }
-   *
-   * @returns Disposable - ฟังก์ชันสำหรับยกเลิก Effect
-   */
+  const [count, setCount] = createSignal(1)
+  const [lastSetterPrev, setLastSetterPrev] = createSignal<number | undefined>()
 
-  /* Example 1 */
-  createEffect(
-    // 1. Compute Phase: ส่วนนี้ใช้ติดตาม Signal (Tracking)
-    // และคืนค่าผลลัพธ์เพื่อส่งต่อไปยังเฟสถัดไป
-    () => {
-      const currentName = name()
-      // console.log('Computing for:', currentName)
-      return currentName
-    },
+  const [doubleCount, setDoubleCount] = createSignal<DoubleState>((prev) => {
+    const nextValue = count() * 2
 
-    // 2. Apply Phase (effectFn): ส่วนนี้รับค่าจากเฟส Compute
-    // และทำงานกับโลกภายนอก (Side Effects) เช่น DOM หรือ API
-    (val) => {
-      // console.log('Applying side effect for:', val)
-      document.title = val
-
-      // สามารถคืนค่า Cleanup function ได้โดยตรงที่นี่ [1], [2]
-      return () => console.log('Cleaning up effect for:', val)
-    },
-
-    // 3. Options
-    { name: 'TitleEffect' },
-  )
-
-  /* Example 2 */
-  createEffect(
-    (prev) => {
-      console.log('Applying computed phase for:', prev)
-      return selected()
-    },
-    (curr, prev) => {
-      console.log('Applying apply phase for:', { curr, prev })
-      setPrevSelected(prev ?? 0)
-      if (prev !== undefined && prev % 2 === 0 && curr % 2 !== 0) {
-        confetti({
-          position: { x: 700, y: 500 },
-          count: 300,
-          size: 1,
-          velocity: 106,
-        })
-      }
-    },
-  )
+    return {
+      value: nextValue,
+      prevValue: prev?.value,
+    }
+  })
 
   return (
-    <>
-      <h1 class={css(h1)}>ใน SolidJS 2.0: มีการแยกเฟส (Split Phases)</h1>
-      <p>
-        ในเวอร์ชัน 2.0 สถาปัตยกรรมถูกเปลี่ยนมาเป็นการแยกเฟสอย่างชัดเจน คือ Compute → Apply
-        เพื่อความแม่นยำ (Fine-grained) สูงสุด
-      </p>
-      <ShikiCodearea
-        id="sourcecode-create-effect"
-        initialCode={`export declare function createEffect<T>(compute: ComputeFunction<undefined | NoInfer<T>, T>, effectFn: EffectFunction<NoInfer<T>, T> | EffectBundle<NoInfer<T>, T>, options?: EffectOptions): void;`}
-        lang="typescript"
-        theme="github-dark"
-      />
-      <ol class={css(listStyle)}>
-        <li>
-          Compute Phase (พารามิเตอร์ที่ 1): ทำหน้าที่ในเฟสการติดตาม (Reactive Tracking)
-          ระบบจะเก็บค่านี้ไว้ และคืนค่าผลลัพธ์ออกมา
-        </li>
-        <li>
-          Apply Phase (พารามิเตอร์ที่ 2): รับค่าที่ได้จากเฟส Compute
-          มาทำงานจริงกับโลกภายนอก (Side Effects) มักเกี่ยวข้องกับการแก้ DOM หรือ API
-          ภายนอก (ราคาแพง)
-        </li>
-      </ol>
-      <p>&nbsp;</p>
-      <p>
-        ทำไมถึงทำแบบนี้? เพราะเฟส Compute รันบนหน่วยความจำซึ่งทำงานได้เร็วมาก (ราคาถูก)
-        <br />
-        ส่วนเฟส Apply มักเกี่ยวข้องกับการแก้ DOM หรือ API ภายนอก (ราคาแพง)
-        <br />
-        ระบบจึงเลือกที่จะรัน Compute เพื่อเช็คผลลัพธ์ก่อน ถ้าผลลัพธ์ไม่เปลี่ยน ระบบจะข้ามเฟส Apply
-        ไปเลย
-      </p>
-
-      <section class={css(section)} id="example1">
-        <h1 class={css(h1)}>Example1: Basic createEffect()</h1>
-        <ShikiCodearea
-          id="example1"
-          initialCode={`
-createEffect(
-  // 1. Compute Phase: ส่วนนี้ใช้ติดตาม Signal (Tracking)
-  // และคืนค่าผลลัพธ์เพื่อส่งต่อไปยังเฟสถัดไป
-  () => {
-    const currentName = name()
-    console.log('Computing for:', currentName)
-    return currentName
-  },
-
-  // 2. Apply Phase (effectFn): ส่วนนี้รับค่าจากเฟส Compute
-  // และทำงานกับโลกภายนอก (Side Effects) เช่น DOM หรือ API
-  (val) => {
-    console.log('Applying side effect for:', val)
-    document.title = val
-
-    // สามารถคืนค่า Cleanup function ได้โดยตรงที่นี่ [1], [2]
-    return () => console.log('Cleaning up effect for:', val)
-  },
-
-  // 3. Options
-  { name: 'TitleEffect' },
-)
-`}
-          lang="typescript"
-          theme="laserwave"
-        />
-        <button
-          onClick={() => {
-            setName(name() + ' is JS framework')
-          }}
-          class={css(btn1)}>
-          กดเพื่อเปลี่ยนชื่อและดูผลลัพธ์ใน console และ title ของหน้าเว็บ
-        </button>
-        <p>{name()}</p>
-      </section>
-
-      <section class={css(section)} id="example2">
-        <h1 class={css(h1)}>Example2: Skip Apply ผ่าน Split-Phase + Confetti</h1>
-        <br />
-        <p>
-          สาธิต Split-Phase: Detect การเปลี่ยน parity (even→odd) และยิง confetti
-        </p>
-        <p>กดสุ่มตัวเลขจากรายการ — confetti จะแสดงเฉพาะเมื่อเปลี่ยนจากเลขคู่ไปเลขคี่</p>
-        <p>
-          รายการตัวเลข:{' '}
-          <span class={css({ color: 'darksalmon', fontWeight: 'bold' })}>
-            [{numbers.join(', ')}]
+    <main style={shellStyle}>
+      <section style={panelStyle}>
+        <div style={{ display: 'grid', gap: '10px' }}>
+          <span
+            style={{
+              width: 'fit-content',
+              padding: '6px 12px',
+              'border-radius': '999px',
+              background: '#172033',
+              color: '#fffaf2',
+              'font-size': '12px',
+              'font-weight': 700,
+              'letter-spacing': '0.08em',
+              'text-transform': 'uppercase',
+            }}>
+            Solid 2.0 Demo
           </span>
-        </p>
-        <ShikiCodearea
-          id="example2"
-          initialCode={`
-const [selected, setSelected] = createSignal(0)
-const [prevSelected, setPrevSelected] = createSignal(0)
 
-// Effect แยก: track prev number สำหรับแสดงผล
-createEffect(
-  () => selected(),
-  (curr, prev) => { setPrevSelected(prev ?? 0) },
-)
+          <h1
+            style={{
+              margin: 0,
+              'font-size': 'clamp(2rem, 5vw, 3.5rem)',
+              'line-height': 1,
+            }}>
+            Writable derived memo
+          </h1>
 
-// Effect หลัก: Compute Phase เป็น gate/filter
-createEffect(
-  // Compute Phase: คืน parity 'even'|'odd' เท่านั้น
-  // ถ้า selected เปลี่ยนแต่ parity เดิม → คืนค่าเดิม → Apply ถูกข้าม!
-  //   เช่น 2→4: 'even'→'even' → ข้าม Apply
-  //   เช่น 2→3: 'even'→'odd'  → รัน Apply
-  () => (selected() % 2 !== 0 ? 'odd' : 'even') as 'odd' | 'even',
+          <p
+            style={{
+              margin: 0,
+              'max-width': '60ch',
+              color: '#4a5568',
+              'font-size': '1.05rem',
+            }}>
+            ตัวอย่างนี้ใช้ <code>createSignal(() =&gt; ...)</code> เพื่อ derive
+            ค่าแบบเขียนทับได้ และแสดงค่า <code>prev</code> เวลากดปุ่มให้ดูชัด ๆ
+          </p>
+        </div>
 
-  // Apply Phase: รันเมื่อ parity เปลี่ยนเท่านั้น
-  (parity, prevParity) => {
-    if (prevParity === 'even' && parity === 'odd') {
-      confetti({ position: { x: 0.5, y: 0.5 }, count: 300, size: 8, velocity: 16 })
-    }
-  },
-)
-`}
-          lang="typescript"
-          theme="laserwave"></ShikiCodearea>
-        <section
+        <div style={metricGridStyle}>
+          <article style={metricCardStyle}>
+            <p style={{ margin: 0, color: '#6a7282', 'font-size': '0.9rem' }}>
+              count
+            </p>
+            <strong style={{ 'font-size': '2.5rem', 'line-height': 1.1 }}>
+              {count()}
+            </strong>
+          </article>
+
+          <article style={metricCardStyle}>
+            <p style={{ margin: 0, color: '#6a7282', 'font-size': '0.9rem' }}>
+              doubleCount
+            </p>
+            <strong style={{ 'font-size': '2.5rem', 'line-height': 1.1 }}>
+              {doubleCount().value}
+            </strong>
+          </article>
+
+          <article style={metricCardStyle}>
+            <p style={{ margin: 0, color: '#6a7282', 'font-size': '0.9rem' }}>
+              prev ใน derive function
+            </p>
+            <strong style={{ 'font-size': '2rem', 'line-height': 1.1 }}>
+              {doubleCount().prevValue ?? 'ยังไม่มี'}
+            </strong>
+          </article>
+
+          <article style={metricCardStyle}>
+            <p style={{ margin: 0, color: '#6a7282', 'font-size': '0.9rem' }}>
+              prev ใน setter function
+            </p>
+            <strong style={{ 'font-size': '2rem', 'line-height': 1.1 }}>
+              {lastSetterPrev() ?? 'ยังไม่มี'}
+            </strong>
+          </article>
+        </div>
+
+        <div
           style={{
-            display: 'flex',
-            'align-items': 'center',
-            gap: '6px',
-            margin: '0.5rem 0',
+            padding: '22px',
+            'border-radius': '24px',
+            background: '#fffaf2',
           }}>
-          เลือกตัวเลข:{' '}
-          <div class={css(numberDisplay)} id="prev">
-            {prevSelected()}
+          <p style={{ margin: '0 0 14px 0', 'font-weight': 700 }}>
+            ลองกดปุ่มเพื่อดูการเปลี่ยนค่า
+          </p>
+
+          <div style={buttonRowStyle}>
+            <button
+              onClick={() => setCount((prev) => prev + 1)}
+              style={{
+                ...baseButtonStyle,
+                background: 'linear-gradient(135deg, #e85d3f 0%, #f6a04d 100%)',
+                color: '#fff',
+                'box-shadow': '0 16px 28px rgba(232, 93, 63, 0.24)',
+              }}>
+              เพิ่ม count
+            </button>
+
+            <button
+              onClick={() =>
+                setDoubleCount((prev) => {
+                  setLastSetterPrev(prev?.value)
+
+                  return {
+                    value: (prev?.value ?? 0) + 10,
+                    prevValue: prev?.value,
+                  }
+                })
+              }
+              style={{
+                ...baseButtonStyle,
+                background: 'linear-gradient(135deg, #1a6cf0 0%, #4ab5ff 100%)',
+                color: '#fff',
+                'box-shadow': '0 16px 28px rgba(26, 108, 240, 0.22)',
+              }}>
+              override doubleCount + 10
+            </button>
+
+            <button
+              onClick={() => setCount(1)}
+              style={{
+                ...baseButtonStyle,
+                background: '#ffffff',
+                color: '#172033',
+                border: '1px solid rgba(23, 32, 51, 0.12)',
+                'box-shadow': '0 10px 24px rgba(23, 32, 51, 0.08)',
+              }}>
+              reset count = 1
+            </button>
           </div>
-          {' → '}
-          <div class={css(numberDisplay2)} id="next">
-            {selected()}
-          </div>
-        </section>
-        <button
-          onClick={() => {
-            const idx = Math.floor(Math.random() * numbers.length)
-            setSelected(numbers[idx])
-          }}
-          class={css(btn1)}>
-          สุ่มตัวเลขจากรายการ
-        </button>
+        </div>
       </section>
-    </>
+    </main>
   )
 }
 

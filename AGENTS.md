@@ -1,136 +1,183 @@
 # AGENTS.md
 
-## Project Framework: SolidJS 2.0 (Beta)
+## Solid 2.0 — Critical Rules (AI Footguns)
 
-This project uses **SolidJS v2.0.0-beta** — a major version with **breaking changes** from v1.x.
-Before writing or modifying any code, you **must** read the type definitions listed below to understand the current API
-surface.
+Solid 2.0 is **not** React, and 2.0 is **not** 1.x. Both priors cause the majority of generated bugs here.
+
+### 1. Props are values, not accessors
+
+**Most common AI bug.** Two rules, one boundary:
+
+```jsx
+// Parent: call accessors at the JSX boundary
+<Counter value={count()} />   // ✅
+<Counter value={count} />     // ❌ child receives a function
+
+// Child: read via props.x (not destructured)
+function Counter(props) {
+  return <div>{props.value}</div>;   // ✅ reactive
+}
+function Counter({ value }) {         // ❌ destructures once, reactivity dead
+  return <div>{value}</div>;
+}
+```
+
+### 2. Signal reads update only after flush
+
+```ts
+setCount(1);
+count(); // still 0 — write is queued
+flush();
+count(); // 1
+```
+
+### 3. `createEffect` takes two arguments (split-phase)
+
+```ts
+// v2.0 — NOT the v1.x single-callback form
+createEffect(
+  () => count(),           // compute: tracks, runs frequently
+  (value, prev) => {        // apply: side effects, cleanup here
+    el.title = value;
+    return () => { /* cleanup */ };
+  }
+);
+```
+
+### 4. No writes inside owned scope
+
+Writing signals/stores from inside a memo, effect compute, or component body throws in dev. Move writes to event handlers or `onSettled`. Opt in narrowly with `{ ownedWrite: true }` for internal state only.
+
+### 5. Don't destructure props
+
+Same root cause as rule 1. Use `props.x`, not `({ x }) => ...`.
+
+### 6. `<For>` callback shape follows keying
+
+| Keying | item | i |
+|---|---|---|
+| default / keyed | plain value | accessor |
+| `keyed={false}` | accessor | plain number |
+| custom key | accessor | accessor |
+
+### 7. Store setters are draft-first
+
+```ts
+setStore(s => {
+  s.user.name = "B";       // mutate in place
+  s.list.push("x");
+});
+```
+
+### 8. `undefined` is a real value in `merge` / setters
+
+It overrides, not "skip this key".
 
 ---
 
-## Required Reading: Type Definitions
+## Imports (2.0)
 
-Before generating, editing, or reviewing any SolidJS-related code, read the following type declaration files:
-
-### 1. `solid-js` Core Types
-
-```
-node_modules/solid-js/types/
+```ts
+import { createSignal, createMemo, createEffect, createStore, For, Show, Switch, Match, Loading, Errored } from "solid-js";
+import { render, Portal, dynamic } from "@solidjs/web";
 ```
 
-Key files to read inside this directory:
-
-- `index.d.ts` — Main entry: re-exports of reactivity primitives, JSX, components, and flow
-- `jsx.d.ts` — JSX namespace and intrinsic element types
-- `html.d.ts` — DOM-specific helpers and directives
-- `server.d.ts` — SSR-specific exports and types (if present)
-- `store.d.ts` — Store types (`createStore`, `produce`, `reconcile`, etc.)
-
-> **Note:** The actual signatures for reactivity primitives (`createSignal`, `createEffect`, `createMemo`, etc.)
-> live in the `@solidjs/signals` package, which `solid-js` re-exports. For the canonical definitions, also read:
->
-> ```
-> node_modules/@solidjs/signals/dist/types/signals.d.ts
-> ```
-
-### 2. `@solidjs/web` Types
-
-```
-node_modules/@solidjs/web/types/
-```
-
-Key files to read inside this directory:
-
-- `index.d.ts` — Web renderer entry: `render`, `hydrate`, portal, and DOM-binding types
-- Any other `.d.ts` files present — read all of them, as v2.0 restructures the rendering layer significantly
+Subpath redirects:
+- `solid-js/web` → `@solidjs/web`
+- `solid-js/store` → `solid-js`
+- `jsxImportSource: "solid-js"` → `"@solidjs/web"`
 
 ---
 
-## How to Read the Types
+## Key Renames (1.x → 2.0)
 
-Run the following shell commands at the start of any SolidJS-related task to enumerate available type files:
-
-```bash
-find node_modules/solid-js/types -name "*.d.ts" | sort
-find node_modules/@solidjs/web/types -name "*.d.ts" | sort
-```
-
-Then read each file:
-
-```bash
-cat node_modules/solid-js/types/index.d.ts
-cat node_modules/@solidjs/web/types/index.d.ts
-# ...repeat for all discovered .d.ts files
-```
-
----
-
-## Key Differences in SolidJS 2.0 vs 1.x (What to Watch For)
-
-SolidJS 2.0 is a breaking release. Do **not** assume v1.x patterns are still valid.
-Pay close attention to:
-
-- **Reactivity system changes** — signals, effects, and ownership model may have changed signatures or semantics
-- **Render API** — `render()` is now in `@solidjs/web`, not `solid-js`
-- **Removed or renamed exports** — verify every import against the actual type files before using it
-- **New primitives** — check for new APIs not present in v1.x
-- **JSX types** — event handler types, ref types, and directive types may have changed
-
-When in doubt, **trust the `.d.ts` files over your training data** — your knowledge of SolidJS 1.x is likely to be stale
-or incorrect for this version.
+| 1.x | 2.0 |
+|---|---|
+| `Suspense` | `Loading` |
+| `SuspenseList` | `Reveal` |
+| `ErrorBoundary` | `Errored` |
+| `mergeProps` | `merge` |
+| `splitProps` | `omit` |
+| `unwrap` | `snapshot` |
+| `onMount` | `onSettled` |
+| `createSelector` | `createProjection` |
+| `classList={{}}` | `class={{}}` (object/array form) |
+| `Index` | `<For keyed={false}>` |
+| `use:foo={x}` directives | `ref={foo(x)}` |
+| `attr:` / `bool:` namespaces | removed (standard attribute behavior) |
 
 ---
 
-## `createEffect` in SolidJS 2.0
+## Removed
 
-In SolidJS 2.0, `createEffect` has a **completely different signature** from v1.x. It now uses a **Split-Phase** model (Compute → Apply):
-
-```typescript
-createEffect<T>(
-  compute: ComputeFunction<undefined | NoInfer<T>, T>,      // Phase 1: Tracking & Computation
-  effectFn: EffectFunction<NoInfer<T>, T> | EffectBundle<NoInfer<T>, T>, // Phase 2: Side Effects
-  options?: EffectOptions                                   // Optional: name, defer
-): void
-```
-
-### Key changes from v1.x
-
-| v1.x | v2.0 |
-|------|------|
-| Single callback with tracking + side effects | Two separate callbacks: `compute` and `effectFn` |
-| `createEffect(fn, value?)` | `createEffect(compute, effectFn, options?)` |
-| Cleanup returned from the same function | Cleanup returned from `effectFn` (Apply phase) |
-
-### Split-Phase behavior
-
-1. **Compute Phase** (1st arg): Tracks signals, performs cheap computation in memory. Runs frequently.
-2. **Apply Phase** (2nd arg): Receives the computed value, performs expensive side effects (DOM, API). Only runs if Compute returns a **different** value.
-3. **Cleanup**: Return a cleanup function from `effectFn` to run before the next Apply or on disposal.
-
-### Always verify against the source of truth
-
-Before using `createEffect` (or any reactivity primitive), read the actual type definitions:
-
-```bash
-# The canonical definitions are in @solidjs/signals
-cat node_modules/@solidjs/signals/dist/types/signals.d.ts
-```
-
-Also check `node_modules/solid-js/types/client/hydration.d.ts` for any hydration-specific overloads.
+- `batch` — microtask batching is default; `flush()` to apply now
+- `createComputed` — use `createMemo` or split `createEffect`
+- `createResource` — use async computations + `<Loading>`
+- `startTransition` / `useTransition` — built-in
+- `produce` — draft-first is default
+- `createMutable` — `createStore` with draft setters
 
 ---
 
-## Reference
+## Class attribute — always object/array form
 
-- Release notes: https://github.com/solidjs/solid/releases/tag/v2.0.0-beta.0
-- SolidJS 2.0 GitHub: https://github.com/solidjs/solid/tree/next/documentation/solid-2.0
+```jsx
+<div class={{ active: isActive(), invalid: !valid() }} />
+<div class={["card", props.class, { active: isActive() }]} />
+```
+
+No `classList` prop. Don't build class strings manually.
 
 ---
 
-## Coding Guidelines
+## Async pattern
 
-- Always import from `solid-js` for reactivity primitives and from `@solidjs/web` for rendering
-- Verify that every imported symbol exists in the type files before using it
-- If a type file does not exist at an expected path, report the missing file rather than guessing
-- Do not fall back to SolidJS v1.x patterns unless confirmed identical in the v2.0 types
-- When in doubt, ask for clarification or refer to the official documentation and type files rather than making assumptions based on prior versions.
+```ts
+const user = createMemo(() => fetchUser(id())); // reading user() suspends
+```
+
+Pending reads participate in `<Loading>`. Use `isPending(() => x())` for "refreshing…" indicators.
+
+---
+
+## Context is the Provider
+
+```tsx
+const TodosContext = createContext<TodosCtx>(); // no default → throws if no Provider
+
+function App() {
+  return <TodosContext value={createTodos()}><TodoList /></TodosContext>;
+}
+```
+
+For primitive fallbacks only (theme, locale): `createContext<T>("light")`.
+
+---
+
+## In tests
+
+```ts
+createRoot(dispose => {
+  setCount(1);
+  flush();
+  expect(count()).toBe(1);
+  dispose();
+});
+```
+
+Reactive primitives need an owner — wrap in `createRoot`.
+
+---
+
+## Source of truth
+
+`node_modules/solid-js/CHEATSHEET.md` — single-page 2.0 reference. Read it before generating code.
+
+Read type definitions from `node_modules/solid-js/types/`:
+- `index.d.ts` — core APIs (signals, effects, memos, contexts)
+- `jsx.d.ts` — JSX types and intrinsic elements
+- `store.d.ts` — store APIs and modifiers
+
+Also check `node_modules/@solidjs/signals/dist/types/signals.d.ts` for canonical reactivity primitives.
+
+Full migration: `node_modules/solid-js/documentation/solid-2.0/MIGRATION.md`

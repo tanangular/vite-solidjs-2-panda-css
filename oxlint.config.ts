@@ -54,6 +54,7 @@ export default defineConfig({
     'unicorn/prefer-string-replace-all': 'error',
     'unicorn/prefer-string-slice': 'error',
     'unicorn/prefer-structured-clone': 'error',
+    'unicorn/no-negated-condition': 'warn',
     'use-isnan': 'error',
     'valid-typeof': 'error',
     'no-sequences': ['off', { allowInParentheses: true }],
