@@ -1,463 +1,209 @@
-import confetti from '@hiseb/confetti'
-import {
-  type Component,
-  createEffect,
-  createMemo,
-  createSignal,
-} from 'solid-js'
-import { css, type Styles } from '#panda/css'
-import ShikiCodearea from './components/ShikiCodearea'
+import type { JSX } from '@solidjs/web'
+import { type Component, createSignal } from 'solid-js'
 
-const btn1: Styles = {
-  bgGradient: 'to-r',
-  border: '1px solid black',
-  gradientFrom: 'teal.800',
-  gradientTo: 'teal.400',
-  color: '#fff',
-  padding: '0.5rem 1rem',
-  m: '0.5rem 0',
+type DoubleState = {
+  value: number
+  prevValue?: number
 }
 
-const h1: Styles = {
-  fontSize: '1.5rem',
-  backgroundColor: 'teal.800',
-  margin: '0.5rem 0',
-  padding: '0.3rem 0.8rem',
+const shellStyle: JSX.CSSProperties = {
+  'min-height': '100vh',
+  display: 'grid',
+  padding: '32px',
+  color: '#172033',
 }
 
-const listStyle: Styles = {
-  listStyle: 'outside',
+const panelStyle: JSX.CSSProperties = {
+  width: 'min(920px, 100%)',
+  margin: 'auto',
+  display: 'grid',
+  gap: '24px',
+  padding: '54px',
+  'border-radius': '28px',
+  background: 'rgba(255, 255, 255, 0.82)',
+  'backdrop-filter': 'blur(16px)',
+  'box-shadow': '0 24px 80px rgba(23, 32, 51, 0.12)',
 }
 
-const section: Styles = {
-  marginBlockStart: '3rem',
-  border: '1px dashed black',
-  padding: '1rem',
+const metricGridStyle: JSX.CSSProperties = {
+  display: 'grid',
+  gap: '16px',
+  'grid-template-columns': 'repeat(auto-fit, minmax(180px, 1fr))',
 }
 
-const numberDisplay: Styles = {
-  display: 'inline-grid',
-  aspectRatio: 1,
-  fontSize: '0.88rem',
-  fontWeight: '600',
-  placeItems: 'center',
-  padding: '6px',
-  width: '30px',
-  height: '30px',
-  backgroundColor: 'darkblue',
+const metricCardStyle: JSX.CSSProperties = {
+  padding: '18px 20px',
+  'border-radius': '20px',
+  background: 'linear-gradient(180deg, #ffffff 0%, #f7f3ee 100%)',
+  border: '1px solid rgba(23, 32, 51, 0.08)',
+  'box-shadow': '0 10px 30px rgba(23, 32, 51, 0.06)',
 }
 
-const numberDisplay2: Styles = {
-  ...numberDisplay,
-  backgroundColor: 'pink.500',
+const buttonRowStyle: JSX.CSSProperties = {
+  display: 'flex',
+  gap: '14px',
+  'flex-wrap': 'wrap',
 }
 
-const randomInts = (num: number, maxInt: number = 10) =>
-  Array.from({ length: num }, () => Math.floor(Math.random() * maxInt))
-
-type Parity = 'even' | 'odd'
-
-const getParity = (value: number): Parity => (value % 2 === 0 ? 'even' : 'odd')
-
-const numbers = randomInts(20, 100)
-const [selected, setSelected] = createSignal(1)
+const baseButtonStyle: JSX.CSSProperties = {
+  appearance: 'none',
+  border: 'none',
+  'border-radius': '999px',
+  padding: '14px 20px',
+  'font-size': '15px',
+  'font-weight': 700,
+  cursor: 'pointer',
+  transition: 'transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease',
+}
 
 const App: Component = () => {
-  const [bundleDivider, setBundleDivider] = createSignal(5)
-  const [bundleResult, setBundleResult] = createSignal('100 / 5 = 20')
-  const [bundleError, setBundleError] = createSignal('')
+  const [count, setCount] = createSignal(1)
+  const [lastSetterPrev, setLastSetterPrev] = createSignal<number | undefined>()
 
-  const [count, setCount] = createSignal(0)
-  const doubled = createMemo((prev: number | undefined) => (prev ?? 0) + count())
-
-  const selectedTransition = createMemo(
-    (prev: { curr: number; prev: number } | undefined) => {
-      const curr = selected()
-
-      return {
-        curr,
-        prev: prev?.curr ?? 0,
-      }
-    },
-  )
-
-  const prevSelected = () => selectedTransition().prev
-
-  createEffect(
-    () => getParity(selected()),
-    (parity, prevParity) => {
-      if (prevParity !== 'even' || parity !== 'odd') {
-        return
-      }
-
-      confetti({
-        position: { x: 700, y: 500 },
-        count: 300,
-        size: 1,
-        velocity: 106,
-      })
-    },
-  )
-
-  createEffect(
-    () => {
-      const divider = bundleDivider()
-
-      if (divider === 0) {
-        throw new Error('หารด้วย 0 ไม่ได้')
-      }
-
-      return {
-        divider,
-        result: 100 / divider,
-      }
-    },
-    {
-      effect: ({ divider, result }) => {
-        setBundleError('')
-        setBundleResult(`100 / ${divider} = ${result}`)
-
-        return () => {
-          setBundleResult('กำลังคำนวณค่าใหม่...')
-        }
-      },
-      error: (err, cleanup) => {
-        cleanup()
-        setBundleError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดที่ไม่รู้จัก')
-      },
-    },
-  )
-
-  return (
-    <>
-      <h1 class={css(h1)}>ใน SolidJS 2.0: มีการแยกเฟส (Split Phases)</h1>
-      <p>
-        ในเวอร์ชัน 2.0 สถาปัตยกรรมถูกเปลี่ยนมาเป็นการแยกเฟสอย่างชัดเจน คือ Compute → Apply
-        เพื่อความแม่นยำ (Fine-grained) สูงสุด
-      </p>
-      <ShikiCodearea
-        id="sourcecode-create-effect"
-        initialCode={`export declare function createEffect<T>(compute: ComputeFunction<undefined | NoInfer<T>, T>, effectFn: EffectFunction<NoInfer<T>, T> | EffectBundle<NoInfer<T>, T>, options?: EffectOptions): void;`}
-        lang="typescript"
-        theme="github-dark"
-      />
-      <ol class={css(listStyle)}>
-        <li>
-          Compute Phase (พารามิเตอร์ที่ 1): ทำหน้าที่ในเฟสการติดตาม (Reactive Tracking)
-          ระบบจะเก็บค่านี้ไว้ และคืนค่าผลลัพธ์ออกมา
-        </li>
-        <li>
-          Apply Phase (พารามิเตอร์ที่ 2): รับค่าที่ได้จากเฟส Compute
-          มาทำงานจริงกับโลกภายนอก (Side Effects) มักเกี่ยวข้องกับการแก้ DOM หรือ API
-          ภายนอก (ราคาแพง)
-        </li>
-      </ol>
-      <p>&nbsp;</p>
-      <p>
-        ทำไมถึงทำแบบนี้? เพราะเฟส Compute รันบนหน่วยความจำซึ่งทำงานได้เร็วมาก (ราคาถูก)
-        <br />
-        ส่วนเฟส Apply มักเกี่ยวข้องกับการแก้ DOM หรือ API ภายนอก (ราคาแพง)
-        <br />
-        ระบบจึงเลือกที่จะรัน Compute เพื่อเช็คผลลัพธ์ก่อน ถ้าผลลัพธ์ไม่เปลี่ยน ระบบจะข้ามเฟส Apply
-        ไปเลย
-      </p>
-
-      <section class={css(section)} id="example2">
-        <h1 class={css(h1)}>Example1: Skip Apply ผ่าน Split-Phase + Confetti</h1>
-        <br />
-        <p>
-          สาธิต Split-Phase: Detect การเปลี่ยน parity (even→odd) และยิง confetti
-        </p>
-        <p>กดสุ่มตัวเลขจากรายการ — confetti จะแสดงเฉพาะเมื่อเปลี่ยนจากเลขคู่ไปเลขคี่</p>
-        <p>
-          รายการตัวเลข:{' '}
-          <span class={css({ color: 'darksalmon', fontWeight: 'bold' })}>
-            [{numbers.join(', ')}]
-          </span>
-        </p>
-        <ShikiCodearea
-          id="example2"
-          initialCode={`
-const selectedTransition = createMemo((prev: { curr: number; prev: number } | undefined) => {
-  const curr = selected()
-
-  return {
-    curr,
-    prev: prev?.curr ?? 0,
-  }
-})
-
-const prevSelected = () => selectedTransition().prev
-
-createEffect(
-  () => getParity(selected()),
-  (parity, prevParity) => {
-    if (prevParity !== 'even' || parity !== 'odd') {
-      return
-    }
-
-    confetti({
-      position: { x: 700, y: 500 },
-      count: 300,
-      size: 1,
-      velocity: 106,
-    })
-  },
-)
-`}
-          lang="typescript"
-          theme="laserwave"></ShikiCodearea>
-        <section
-          style={{
-            display: 'flex',
-            'align-items': 'center',
-            gap: '6px',
-            margin: '0.5rem 0',
-          }}>
-          เลือกตัวเลข:{' '}
-          <div class={css(numberDisplay)} id="prev">
-            {prevSelected()}
-          </div>
-          {' → '}
-          <div class={css(numberDisplay2)} id="next">
-            {selected()}
-          </div>
-        </section>
-        <button
-          onClick={() => {
-            const idx = Math.floor(Math.random() * numbers.length)
-            setSelected(numbers[idx])
-          }}
-          class={css(btn1)}>
-          สุ่มตัวเลขจากรายการ
-        </button>
-      </section>
-
-      <section class={css(section)} id="effect-bundle">
-        <h1 class={css(h1)}>Example2: createEffect แบบ EffectBundle</h1>
-        <br />
-        <p>
-          `EffectBundle` คือรูปแบบที่ส่ง object เป็นพารามิเตอร์ตัวที่ 2 ของ `createEffect`
-          โดยแยก handler ออกเป็น `effect` สำหรับงานปกติ และ `error`
-          สำหรับจัดการข้อผิดพลาด
-        </p>
-        <ol class={css(listStyle)}>
-          <li>
-            `effect`: ทำงานเมื่อ Compute Phase คืนค่าสำเร็จ และรับค่าที่ compute ส่งมา
-          </li>
-          <li>
-            `error`: ทำงานเมื่อ Compute หรือ Effect โยน error และได้รับ `cleanup`
-            เพื่อเก็บงานเก่าก่อนจัดการ error
-          </li>
-        </ol>
-        <p>
-          ตัวอย่างนี้คำนวณ <strong>100 / ตัวหาร</strong> ถ้าเลือกตัวหารเป็น 0 จะ throw
-          error แล้วส่งไปที่ `error` handler ของ EffectBundle
-        </p>
-        <ShikiCodearea
-          id="effect-bundle-code"
-          initialCode={`export type EffectBundle<Prev, Next extends Prev = Prev> = {
-  effect: EffectFunction<Prev, Next>
-  error: (err: unknown, cleanup: () => void) => void
-}
-
-const [divider, setDivider] = createSignal(5)
-const [result, setResult] = createSignal('100 / 5 = 20')
-const [error, setError] = createSignal('')
-
-createEffect(
-  () => {
-    const value = divider()
-
-    if (value === 0) {
-      throw new Error('หารด้วย 0 ไม่ได้')
-    }
+  const [doubleCount, setDoubleCount] = createSignal<DoubleState>((prev) => {
+    const nextValue = count() * 2
 
     return {
-      divider: value,
-      result: 100 / value,
+      value: nextValue,
+      prevValue: prev?.value,
     }
-  },
-  {
-    effect: ({ divider, result }) => {
-      setError('')
-      setResult(\`100 / \${divider} = \${result}\`)
+  })
 
-      return () => {
-        setResult('กำลังคำนวณค่าใหม่...')
-      }
-    },
-    error: (err, cleanup) => {
-      cleanup()
-      setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดที่ไม่รู้จัก')
-    },
-  },
-)`}
-          lang="typescript"
-          theme="laserwave"></ShikiCodearea>
-        <section
-          style={{
-            display: 'flex',
-            'align-items': 'center',
-            gap: '6px',
-            margin: '0.5rem 0',
-          }}>
-          ตัวหาร:{' '}
-          <div class={css(numberDisplay2)} id="bundle-divider">
-            {bundleDivider()}
-          </div>
-        </section>
-        <p>
-          ผลลัพธ์:{' '}
-          <span class={css({ color: 'lightgreen', fontWeight: 'bold' })}>
-            {bundleResult()}
+  return (
+    <main style={shellStyle}>
+      <section style={panelStyle}>
+        <div style={{ display: 'grid', gap: '10px' }}>
+          <span
+            style={{
+              width: 'fit-content',
+              padding: '6px 12px',
+              'border-radius': '999px',
+              background: '#172033',
+              color: '#fffaf2',
+              'font-size': '12px',
+              'font-weight': 700,
+              'letter-spacing': '0.08em',
+              'text-transform': 'uppercase',
+            }}>
+            Solid 2.0 Demo
           </span>
-        </p>
-        <p>
-          Error:{' '}
-          <span class={css({ color: 'salmon', fontWeight: 'bold' })}>
-            {bundleError() || '-'}
-          </span>
-        </p>
-        <button onClick={() => setBundleDivider(5)} class={css(btn1)}>
-          หารด้วย 5
-        </button>
-        <button onClick={() => setBundleDivider(4)} class={css(btn1)}>
-          หารด้วย 4
-        </button>
-        <button onClick={() => setBundleDivider(0)} class={css(btn1)}>
-          ลองหารด้วย 0
-        </button>
-      </section>
 
-      <section class={css(section)} id="create-signal">
-        <h1 class={css(h1)}>Example3: createSignal ใน SolidJS 2.0</h1>
-        <br />
-        <p>
-          `createSignal` คือ primitive พื้นฐานสุดของ SolidJS สำหรับสร้างสถานะแบบ Reactive
-          คืนค่าเป็น tuple `[get, set]` โดย `get` เป็น Accessor (ฟังก์ชันอ่านค่า)
-          และ `set` เป็น Setter (ฟังก์ชันเขียนค่า)
-        </p>
+          <h1
+            style={{
+              margin: 0,
+              'font-size': 'clamp(2rem, 5vw, 3.5rem)',
+              'line-height': 1,
+            }}>
+            Writable derived memo
+          </h1>
 
-        <h2 class={css({ ...h1, fontSize: '1.1rem', backgroundColor: 'teal.600' })}>
-          3 Overloads ของ createSignal
-        </h2>
-        <ShikiCodearea
-          id="create-signal-overloads"
-          initialCode={`// Overload 1: ไม่ส่งค่าเริ่มต้น → type จะ extend undefined
-export declare function createSignal<T>(): Signal<T | undefined>
+          <p
+            style={{
+              margin: 0,
+              'max-width': '60ch',
+              color: '#4a5568',
+              'font-size': '1.05rem',
+            }}>
+            ตัวอย่างนี้ใช้ <code>createSignal(() =&gt; ...)</code> เพื่อ derive
+            ค่าแบบเขียนทับได้ และแสดงค่า <code>prev</code> เวลากดปุ่มให้ดูชัด ๆ
+          </p>
+        </div>
 
-// Overload 2: ส่งค่าเริ่มต้น (ค่าธรรมดา ไม่ใช่ฟังก์ชัน)
-export declare function createSignal<T>(
-  value: Exclude<T, Function>,
-  options?: SignalOptions<T>,
-): Signal<T>
-
-// Overload 3: ส่งฟังก์ชัน → สร้าง Writable Memo
-export declare function createSignal<T>(
-  fn: ComputeFunction<T>,
-  options?: SignalOptions<T> & MemoOptions<T>,
-): Signal<T>`}
-          lang="typescript"
-          theme="github-dark"
-        />
-
-        <h2 class={css({ ...h1, fontSize: '1.1rem', backgroundColor: 'teal.600' })}>
-          SignalOptions
-        </h2>
-        <ShikiCodearea
-          id="signal-options"
-          initialCode={`export interface SignalOptions<T> {
-  /** ชื่อสำหรับ Debug (dev mode เท่านั้น) */
-  name?: string
-  /** ฟังก์ชันเปรียบเทียบความเท่ากัน หรือ false เพื่อแจ้งทุกครั้ง */
-  equals?: false | ((prev: T, next: T) => boolean)
-  /** ระงับการเตือน dev-mode เมื่อเขียนใน owned scope */
-  ownedWrite?: boolean
-  /** เรียกเมื่อ signal ไม่มี subscriber แล้ว */
-  unobserved?: () => void
-}`}
-          lang="typescript"
-          theme="github-dark"
-        />
-
-        <h2 class={css({ ...h1, fontSize: '1.1rem', backgroundColor: 'teal.600' })}>
-          Setter Type
-        </h2>
-        <ShikiCodearea
-          id="setter-type"
-          initialCode={`export type Setter<in out T> = {
-  // กรณี T รวม undefined: เรียกได้โดยไม่ส่ง argument → undefined
-  <U extends T>(...args: undefined extends T
-    ? []
-    : [value: Exclude<U, Function> | ((prev: T) => U)]
-  ): undefined extends T ? undefined : U
-
-  // ส่งฟังก์ชัน updater: (prev: T) => U
-  <U extends T>(value: (prev: T) => U): U
-
-  // ส่งค่าธรรมดา (ไม่ใช่ Function)
-  <U extends T>(value: Exclude<U, Function>): U
-
-  // ส่งค่าหรือฟังก์ชัน
-  <U extends T>(value: Exclude<U, Function> | ((prev: T) => U)): U
-}`}
-          lang="typescript"
-          theme="github-dark"
-        />
-
-        <h2 class={css({ ...h1, fontSize: '1.1rem', backgroundColor: 'teal.600' })}>
-          Demo: การใช้ createSignal และ Setter
-        </h2>
-        <p>
-          กดปุ่มเพื่อเพิ่มค่า — แสดง count และ doubled (ผ่าน createMemo)
-        </p>
-        <ShikiCodearea
-          id="create-signal-demo"
-          initialCode={`const [count, setCount] = createSignal(0)
-
-// createMemo ใช้อ่าน count() แล้วคำนวณค่าใหม่
-const doubled = createMemo(
-  (prev: number | undefined) => (prev ?? 0) + count()
-)
-
-// Setter แบบฟังก์ชัน: รับค่าก่อนหน้า คืนค่าใหม่
-setCount((prev) => prev + 1)
-
-// Setter แบบค่าธรรมดา: ตั้งค่าโดยตรง
-setCount(0)`}
-          lang="typescript"
-          theme="laserwave"
-        />
-
-        <section
-          style={{
-            display: 'flex',
-            'align-items': 'center',
-            gap: '12px',
-            margin: '0.5rem 0',
-          }}>
-          <span>
-            Count:{' '}
-            <span class={css({ color: 'lightgreen', fontWeight: 'bold' })}>
+        <div style={metricGridStyle}>
+          <article style={metricCardStyle}>
+            <p style={{ margin: 0, color: '#6a7282', 'font-size': '0.9rem' }}>
+              count
+            </p>
+            <strong style={{ 'font-size': '2.5rem', 'line-height': 1.1 }}>
               {count()}
-            </span>
-          </span>
-          <span>
-            Doubled:{' '}
-            <span class={css({ color: 'skyblue', fontWeight: 'bold' })}>
-              {doubled()}
-            </span>
-          </span>
-        </section>
-        <button onClick={() => setCount((prev) => prev + 1)} class={css(btn1)}>
-          +1 (Setter แบบฟังก์ชัน)
-        </button>
-        <button onClick={() => setCount(0)} class={css(btn1)}>
-          รีเซ็ต (Setter แบบค่าธรรมดา)
-        </button>
+            </strong>
+          </article>
+
+          <article style={metricCardStyle}>
+            <p style={{ margin: 0, color: '#6a7282', 'font-size': '0.9rem' }}>
+              doubleCount
+            </p>
+            <strong style={{ 'font-size': '2.5rem', 'line-height': 1.1 }}>
+              {doubleCount().value}
+            </strong>
+          </article>
+
+          <article style={metricCardStyle}>
+            <p style={{ margin: 0, color: '#6a7282', 'font-size': '0.9rem' }}>
+              prev ใน derive function
+            </p>
+            <strong style={{ 'font-size': '2rem', 'line-height': 1.1 }}>
+              {doubleCount().prevValue ?? 'ยังไม่มี'}
+            </strong>
+          </article>
+
+          <article style={metricCardStyle}>
+            <p style={{ margin: 0, color: '#6a7282', 'font-size': '0.9rem' }}>
+              prev ใน setter function
+            </p>
+            <strong style={{ 'font-size': '2rem', 'line-height': 1.1 }}>
+              {lastSetterPrev() ?? 'ยังไม่มี'}
+            </strong>
+          </article>
+        </div>
+
+        <div
+          style={{
+            padding: '22px',
+            'border-radius': '24px',
+            background: '#fffaf2',
+          }}>
+          <p style={{ margin: '0 0 14px 0', 'font-weight': 700 }}>
+            ลองกดปุ่มเพื่อดูการเปลี่ยนค่า
+          </p>
+
+          <div style={buttonRowStyle}>
+            <button
+              onClick={() => setCount((prev) => prev + 1)}
+              style={{
+                ...baseButtonStyle,
+                background: 'linear-gradient(135deg, #e85d3f 0%, #f6a04d 100%)',
+                color: '#fff',
+                'box-shadow': '0 16px 28px rgba(232, 93, 63, 0.24)',
+              }}>
+              เพิ่ม count
+            </button>
+
+            <button
+              onClick={() =>
+                setDoubleCount((prev) => {
+                  setLastSetterPrev(prev?.value)
+
+                  return {
+                    value: (prev?.value ?? 0) + 10,
+                    prevValue: prev?.value,
+                  }
+                })
+              }
+              style={{
+                ...baseButtonStyle,
+                background: 'linear-gradient(135deg, #1a6cf0 0%, #4ab5ff 100%)',
+                color: '#fff',
+                'box-shadow': '0 16px 28px rgba(26, 108, 240, 0.22)',
+              }}>
+              override doubleCount + 10
+            </button>
+
+            <button
+              onClick={() => setCount(1)}
+              style={{
+                ...baseButtonStyle,
+                background: '#ffffff',
+                color: '#172033',
+                border: '1px solid rgba(23, 32, 51, 0.12)',
+                'box-shadow': '0 10px 24px rgba(23, 32, 51, 0.08)',
+              }}>
+              reset count = 1
+            </button>
+          </div>
+        </div>
       </section>
-    </>
+    </main>
   )
 }
 
