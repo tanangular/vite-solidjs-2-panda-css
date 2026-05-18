@@ -18,7 +18,6 @@
     "start": "vite"
   },
   "dependencies": {
-    "@hiseb/confetti": "^2.1.0",
     "@solidjs/web": "2.0.0-beta.13",
     "solid-js": "2.0.0-beta.13"
   },
@@ -31,7 +30,6 @@
     "eslint-plugin-unused-imports": "^4.4.1",
     "oxfmt": "^0.42.0",
     "oxlint": "^1.65.0",
-    "shiki": "^4.0.2",
     "solid-devtools": "^0.34.5",
     "ts-node": "^10.9.2",
     "tsx": "^4.22.0",
