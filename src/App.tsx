@@ -20,7 +20,10 @@ const App: Component = () => {
   })
 
   const handleIncreaseCount = () => {
-    setCount((prev) => prev + 1)
+    setCount((prev) => {
+      console.log('prevValue in handleIncreaseCount: ', prev)
+      return prev + 1
+    })
   }
 
   const handleOverrideDoubleCount = () => {
@@ -64,14 +67,18 @@ const App: Component = () => {
           </article>
 
           <article class="metric-card">
-            <p class="metric-label nowrap" lang="th">prev ใน derive function</p>
+            <p class="metric-label nowrap" lang="th">
+              prev ใน derive function
+            </p>
             <strong class="metric-value-lg">
               <span lang="th">{doubleCount().prevValue ?? 'ยังไม่มี'}</span>
             </strong>
           </article>
 
           <article class="metric-card">
-            <p class="metric-label nowrap" lang="th">prev ใน setter function</p>
+            <p class="metric-label nowrap" lang="th">
+              prev ใน setter function
+            </p>
             <strong class="metric-value-lg">
               <span lang="th">{lastSetterPrev() ?? 'ยังไม่มี'}</span>
             </strong>
@@ -79,7 +86,9 @@ const App: Component = () => {
         </div>
 
         <div class="actions-panel">
-          <p class="actions-title" lang="th">ลองกดปุ่มเพื่อดูการเปลี่ยนค่า</p>
+          <p class="actions-title" lang="th">
+            ลองกดปุ่มเพื่อดูการเปลี่ยนค่า
+          </p>
 
           <div class="button-row">
             <button
