@@ -28,6 +28,7 @@ const App: Component = () => {
 
   const handleOverrideDoubleCount = () => {
     setDoubleCount((prev) => {
+      console.log('prevValue in handleOverrideDoubleCount: ', prev?.value)
       setLastSetterPrev(prev?.value)
 
       return {
