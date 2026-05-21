@@ -27,13 +27,13 @@ const tutorialSections: TutorialSection[] = [
   {
     id: 'equals',
     option: 'equals',
-    summary: 'ควบคุมว่า subscriber ควรถูก notify เมื่อไร ด้วย comparator ของคุณเอง',
+    summary: 'นิยามเองได้ว่าเมื่อไรค่าที่เขียนเข้า signal ควรถือว่า “เปลี่ยนจริง” สำหรับ subscriber',
     whenToUse:
-      'ใช้เมื่อค่าด้านในเปลี่ยนบ่อย แต่ UI ควร re-render เฉพาะตอน key สำคัญเปลี่ยน เช่น version, id หรือ revision',
+      'ใช้เมื่อ signal เก็บ object ที่มีหลาย field แต่ downstream ควร react เฉพาะ field สำคัญ เช่น id, version หรือ revision',
     benefit:
-      'ลดการ reactive update ที่ไม่จำเป็น และแยก “ค่าเปลี่ยน” ออกจาก “ควร notify subscriber หรือยัง”',
+      'ลด reactive work ที่ไม่จำเป็น และทำให้คุณแยกได้ชัดว่า “ข้อมูลใหม่ถูกเก็บแล้ว” กับ “subscriber ควรถูกรันใหม่ไหม” ไม่จำเป็นต้องเป็นเรื่องเดียวกัน',
     caution:
-      'ถ้า comparator คืนค่า true ค่าใหม่ยังถูกเก็บได้ แต่ subscriber จะไม่ถูกปลุก จึงต้องออกแบบ comparator ให้ตรงกับ semantic จริง',
+      'ถ้า comparator คืนค่า true manual read หลัง flush อาจเห็นค่าใหม่แล้ว แต่ effect หรือ JSX ที่ subscribe ไว้จะยังไม่ rerun จึงต้องออกแบบ comparator ให้ตรง semantic จริงของแอป',
     code: `const [profile, setProfile] = createSignal(
   { version: 1, label: "Initial label" },
   {
@@ -45,13 +45,13 @@ const tutorialSections: TutorialSection[] = [
   {
     id: 'unobserved',
     option: 'unobserved',
-    summary: 'รัน callback ตอน signal ไม่มี subscriber เหลืออยู่แล้ว',
+    summary: 'callback สำหรับจังหวะที่ signal ตัวนั้นไม่มี subscriber เหลืออยู่จริง ๆ',
     whenToUse:
-      'ใช้กับงาน cleanup เล็ก ๆ เช่นล้าง preview cache, ปิด polling, หรือลบ ephemeral entry ที่มีประโยชน์เฉพาะตอนมีคนอ่านอยู่',
+      'ใช้กับ preview, cache, polling หรือ state ชั่วคราวที่ควรอยู่ต่อเฉพาะตอนยังมี JSX, memo หรือ effect ไหนสักแห่งอ่านมันอยู่',
     benefit:
-      'ทำให้ state ที่มีอายุสั้นทำความสะอาดตัวเองได้โดยผูกกับการมี subscriber จริง',
+      'ทำให้ cleanup ผูกกับการใช้งานจริงของ reactive graph แทนการเดาเองจาก lifecycle ของ component เดียว',
     caution:
-      'callback นี้จะไม่ทำงานถ้ายังมี JSX, effect หรือ memo ไหนสักแห่ง subscribe signal ตัวนั้นอยู่',
+      'มันอิงจำนวน subscriber ทั้งระบบ ไม่ได้อิงว่า component ตัวนี้ unmount หรือซ่อนอยู่ตัวเดียว ถ้ายังมี reader ที่อื่นค้างอยู่ callback จะไม่ยิง',
     code: `const [previewValue, setPreviewValue] = createSignal(1, {
   name: "trackedPreviewValue",
   unobserved: () => appendLog("no subscribers left"),
@@ -60,13 +60,13 @@ const tutorialSections: TutorialSection[] = [
   {
     id: 'ownedWrite',
     option: 'ownedWrite',
-    summary: 'อนุญาตให้ signal นั้นถูกเขียนจาก owned scope ได้แบบเจาะจง',
+    summary: 'opt-in แบบเจาะจงเพื่อยอมให้ setter ของ signal นี้ถูกเรียกจาก owned scope ได้',
     whenToUse:
-      'ใช้เฉพาะ internal state ที่ตั้งใจให้ถูกเขียนจาก memo/effect compute หรือ reactive primitive ภายในจริง ๆ',
+      'ใช้เฉพาะ internal bookkeeping ที่แคบมาก เช่น debug note, hydration flag หรือ cache marker ที่ต้องถูกเขียนจาก memo/effect compute จริง ๆ',
     benefit:
-      'ช่วยทำ internal bookkeeping หรือ debug mirror ได้ โดยไม่ต้องเปิดทางให้ shared state ทั้งก้อนเขียนแบบเสี่ยง ๆ',
+      'ช่วยเก็บสถานะช่วยคำนวณภายในได้โดยไม่ต้องยกเลิก safety guard ของ Solid 2.0 ทั้งระบบ',
     caution:
-      'ไม่ควรใช้กับ business state ทั่วไป เพราะมันเป็นการ opt-in ข้าม guard ของ Solid 2.0 ที่ตั้งใจป้องกัน side effect ใน owned scope',
+      'มันเป็น escape hatch ไม่ใช่รูปแบบหลัก ถ้ากำลัง mirror shared state หรือ business state ระหว่าง signals ให้ derive ด้วย memo หรือย้าย write ไป event handler/onSettled แทน',
     code: `const [internalNote, setInternalNote] = createSignal("idle", {
   name: "ownedWriteNote",
   ownedWrite: true,
@@ -311,7 +311,8 @@ const App: Component = () => {
             <h2 class="section-title">Live Demo: equals</h2>
             <p class="section-description" lang="th">
               comparator ตัวนี้ดูเฉพาะ <code>version</code> เท่านั้น ดังนั้น label
-              ที่เปลี่ยนแต่ version เดิม จะถูกเก็บค่าใหม่ไว้ แต่ subscriber จะไม่ถูก notify
+              ที่เปลี่ยนแต่ version เดิม จะถูกเก็บเป็นค่าล่าสุดได้ แต่ subscriber
+              จะยังไม่ rerun เพราะ Solid มองว่าการเปลี่ยนครั้งนั้น “เท่ากัน”
             </p>
           </div>
 
@@ -373,8 +374,9 @@ const App: Component = () => {
             <article class="demo-side-card">
               <p class="card-kicker">Observation</p>
               <p class="side-copy" lang="th">
-                การ read แบบ manual จะแสดงค่าล่าสุดใน signal แม้ reactive label ด้านซ้ายยังไม่ขยับ
-                ถ้า comparator มองว่าการเปลี่ยนนั้น “เท่ากัน”
+                การ read แบบ manual หลัง flush จะเห็นค่าล่าสุดใน signal ได้ แม้ UI หรือ effect
+                ที่ subscribe ไว้ก่อนหน้านี้ยังไม่ขยับ ถ้า comparator ตัดสินว่าการเปลี่ยนนั้น
+                “เท่ากัน”
               </p>
               <p class="status-text">{equalsManualRead()}</p>
             </article>
@@ -386,8 +388,8 @@ const App: Component = () => {
             <h2 class="section-title">Live Demo: unobserved</h2>
             <p class="section-description" lang="th">
               ค่า <code>trackedPreviewValue</code> จะถูกอ่านเฉพาะใน preview box นี้เท่านั้น
-              เมื่อซ่อนกล่อง preview จนไม่มี subscriber เหลือ callback <code>unobserved</code>{' '}
-              จะมีโอกาสทำงาน
+              เมื่อซ่อนกล่อง preview จนผู้อ่านคนสุดท้ายหายไป callback{' '}
+              <code>unobserved</code> จึงมีโอกาสทำงาน
             </p>
           </div>
 
@@ -452,8 +454,9 @@ const App: Component = () => {
             <h2 class="section-title">Live Demo: ownedWrite</h2>
             <p class="section-description" lang="th">
               ตัวอย่างนี้ใช้ writable derived signal เพื่อคำนวณ <code>derivedCount</code>{' '}
-              และเขียน log สั้น ๆ ลงใน <code>ownedWriteMeta</code> จากภายใน compute
-              โดยเปิด <code>ownedWrite: true</code> ให้กับ signal ปลายทางแบบเจาะจง
+              และเขียน internal note ลงใน <code>ownedWriteMeta</code> จากภายใน compute
+              ซึ่งตามปกติ Solid 2.0 จะกัน pattern นี้ไว้ใน dev mode แต่ตัว signal
+              ปลายทางได้ opt-in <code>ownedWrite: true</code> ไว้แบบเจาะจง
             </p>
           </div>
 
@@ -500,8 +503,9 @@ const App: Component = () => {
                   ใช้ <code>ownedWrite</code> กับ internal state ที่แคบและรู้ขอบเขตเท่านั้น
                 </p>
                 <p>
-                  ถ้าเป็น shared state หรือ user-facing state ทั่วไป ให้ย้าย write
-                  ไปอยู่ใน event handler หรือ <code>onSettled</code> จะปลอดภัยกว่า
+                  ถ้าค่าหนึ่ง derive มาจากอีกค่าหนึ่งตามปกติ ให้ใช้ memo แทนการ write-back
+                  ข้าม signals; ถ้าเป็น side effect ทั่วไป ให้ย้าย write ไป event handler
+                  หรือ <code>onSettled</code> จะปลอดภัยกว่า
                 </p>
               </div>
             </article>
