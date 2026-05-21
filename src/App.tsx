@@ -7,21 +7,7 @@ import {
   type SignalOptions,
 } from 'solid-js'
 import './App.css'
-
-type EqualsProfile = {
-  version: number
-  label: string
-}
-
-type TutorialSection = {
-  id: string
-  option: string
-  summary: string
-  whenToUse: string
-  benefit: string
-  caution: string
-  code: string
-}
+import type { EqualsProfile, TutorialSection } from './types/app'
 
 const signalOptionsInterfaceSnippet = `export interface SignalOptions<T> {
   name?: string;
@@ -37,7 +23,7 @@ const combinedSignalOptionsSnippet = `const [resource, setResource] = createSign
   unobserved: () => releasePreviewCache(),
 })`
 
-const tutorialSections: Array<TutorialSection> = [
+const tutorialSections: TutorialSection[] = [
   {
     id: 'equals',
     option: 'equals',
@@ -107,7 +93,7 @@ const equalsManualReadSignalOptions: SignalOptions<string> = {
   name: 'equalsManualRead',
 }
 
-const subscriptionEventsSignalOptions: SignalOptions<Array<string>> = {
+const subscriptionEventsSignalOptions: SignalOptions<string[]> = {
   name: 'subscriptionEvents',
   ownedWrite: true,
 }
@@ -144,7 +130,7 @@ const App: Component = () => {
 
   const [subscriptionPreviewVisible, setSubscriptionPreviewVisible] =
     createSignal(true)
-  const [subscriptionEvents, setSubscriptionEvents] = createSignal<Array<string>>(
+  const [subscriptionEvents, setSubscriptionEvents] = createSignal<string[]>(
     ['Preview subscriber is mounted.'],
     subscriptionEventsSignalOptions
   )

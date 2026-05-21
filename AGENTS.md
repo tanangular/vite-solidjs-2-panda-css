@@ -218,3 +218,19 @@ import "./App.css";
 ```
 
 Do not define large inline style objects in the component unless there is a narrow, unavoidable runtime need.
+
+### 3. Prefer `T[]` over `Array<T>`
+
+For TypeScript array types, always use the short form `T[]` instead of `Array<T>`.
+
+```ts
+const items: string[] = [];
+const sections: TutorialSection[] = [];
+```
+
+Do not write:
+
+```ts
+const items: Array<string> = [];
+const sections: Array<TutorialSection> = [];
+```

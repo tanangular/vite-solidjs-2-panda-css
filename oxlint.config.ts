@@ -10,7 +10,7 @@ export default defineConfig({
   ignorePatterns: ['dist/', 'styled-system/', 'vite.config.ts.timestamp-*'],
   plugins: ['typescript', 'import', 'unicorn'],
   rules: {
-    '@typescript-eslint/array-type': ['error', { default: 'generic' }],
+    'typescript/array-type': ['error', { default: 'array-simple' }],
     '@typescript-eslint/no-duplicate-enum-values': 'error',
     '@typescript-eslint/no-empty-object-type': 'error',
     '@typescript-eslint/no-explicit-any': 'error',
