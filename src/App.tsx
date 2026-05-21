@@ -46,9 +46,9 @@ const App: Component = () => {
 
           <h1 class="app-title">Writable derived memo</h1>
 
-          <p class="app-description">
-            ตัวอย่างนี้ใช้ <code>createSignal(() =&gt; ...)</code> เพื่อ derive
-            ค่าแบบเขียนทับได้ และแสดงค่า <code>prev</code> เวลากดปุ่มให้ดูชัด ๆ
+          <p class="app-description" lang="th">
+            ตัวอย่างนี้ใช้ <code>createSignal(fn ...)</code> เพื่อ derive ค่าแบบเขียนทับได้
+            และแสดงค่า <code>prev</code> เวลากดปุ่มให้ดูชัด ๆ
           </p>
         </div>
 
@@ -64,35 +64,42 @@ const App: Component = () => {
           </article>
 
           <article class="metric-card">
-            <p class="metric-label nowrap">prev ใน derive function</p>
+            <p class="metric-label nowrap" lang="th">prev ใน derive function</p>
             <strong class="metric-value-lg">
-              {doubleCount().prevValue ?? 'ยังไม่มี'}
+              <span lang="th">{doubleCount().prevValue ?? 'ยังไม่มี'}</span>
             </strong>
           </article>
 
           <article class="metric-card">
-            <p class="metric-label nowrap">prev ใน setter function</p>
+            <p class="metric-label nowrap" lang="th">prev ใน setter function</p>
             <strong class="metric-value-lg">
-              {lastSetterPrev() ?? 'ยังไม่มี'}
+              <span lang="th">{lastSetterPrev() ?? 'ยังไม่มี'}</span>
             </strong>
           </article>
         </div>
 
         <div class="actions-panel">
-          <p class="actions-title">ลองกดปุ่มเพื่อดูการเปลี่ยนค่า</p>
+          <p class="actions-title" lang="th">ลองกดปุ่มเพื่อดูการเปลี่ยนค่า</p>
 
           <div class="button-row">
-            <button onClick={handleIncreaseCount} class="action-button action-button-primary">
+            <button
+              onClick={handleIncreaseCount}
+              lang="th"
+              class="action-button action-button-primary">
               เพิ่ม count
             </button>
 
             <button
               onClick={handleOverrideDoubleCount}
+              lang="th"
               class="action-button action-button-info">
               override doubleCount + 10
             </button>
 
-            <button onClick={handleResetCount} class="action-button action-button-secondary">
+            <button
+              onClick={handleResetCount}
+              lang="th"
+              class="action-button action-button-secondary">
               reset count = 1
             </button>
           </div>

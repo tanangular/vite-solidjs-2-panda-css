@@ -1,9 +1,32 @@
 @layer reset, base, tokens, recipes, utilities;
 
+:root {
+  --color-canvas: #f4efe8;
+  --color-canvas-glow: #e7c7a5;
+  --color-canvas-shadow: #d8dfd2;
+  --color-surface: rgba(255, 250, 243, 0.84);
+  --color-surface-strong: #fffaf4;
+  --color-surface-muted: #f1e7d8;
+  --color-border: rgba(69, 49, 33, 0.12);
+  --color-border-strong: rgba(69, 49, 33, 0.18);
+  --color-text: #2d2118;
+  --color-text-muted: #6d5f53;
+  --color-text-soft: #8a7b6d;
+  --color-accent: #c96947;
+  --color-accent-strong: #9f4e34;
+  --color-accent-soft: #ebc5ae;
+  --color-ink: #433126;
+  --color-ink-soft: #5f4a3c;
+  --shadow-panel: 0 24px 80px rgba(70, 49, 33, 0.12);
+  --shadow-card: 0 12px 32px rgba(70, 49, 33, 0.08);
+}
+
 body {
   margin: 0;
   background:
-    radial-gradient(circle at top left, #f8d7a7 0%, #f3efe7 38%, #dce7f6 100%);
+    radial-gradient(circle at top left, var(--color-canvas-glow) 0%, transparent 30%),
+    radial-gradient(circle at right center, var(--color-canvas-shadow) 0%, transparent 28%),
+    linear-gradient(180deg, #fbf6ef 0%, var(--color-canvas) 100%);
   font-family:
     'Avenir Next',
     'Segoe UI',
@@ -11,6 +34,15 @@ body {
     sans-serif;
   font-size: 1.1rem;
   min-height: 100dvh;
+  color: var(--color-text);
+}
+
+:lang(th) {
+  font-family:
+    'Google Sans Text',
+    'Google Sans',
+    'Noto Sans Thai',
+    sans-serif;
 }
 
 * {
