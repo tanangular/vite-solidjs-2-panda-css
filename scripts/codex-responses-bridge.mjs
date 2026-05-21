@@ -17,7 +17,7 @@ async function readConfigToken() {
     process.env.CODEX_CONFIG ?? `${process.env.HOME}/.codex/config.toml`
   const config = await readFile(configPath, 'utf8').catch(() => '')
   const block = config.match(
-    /\[model_providers\.opencodego\]([\s\S]*?)(?:\n\[|$)/,
+    /\[model_providers\.opencodego]([\s\S]*?)(?:\n\[|$)/,
   )?.[1]
   return block?.match(/experimental_bearer_token\s*=\s*"([^"]+)"/)?.[1]
 }
@@ -254,13 +254,19 @@ async function handleResponses(req, res, token) {
     buffer = lines.pop() ?? ''
 
     for (const line of lines) {
-      if (!line.startsWith('data:')) continue
+      if (!line.startsWith('data:')) {
+        continue
+      }
       const data = line.slice(5).trim()
-      if (!data || data === '[DONE]') continue
+      if (!data || data === '[DONE]') {
+        continue
+      }
 
       const parsed = JSON.parse(data)
       const delta = parsed.choices?.[0]?.delta?.content ?? ''
-      if (!delta) continue
+      if (!delta) {
+        continue
+      }
 
       text += delta
       sse(res, 'response.output_text.delta', {
