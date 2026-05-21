@@ -19,6 +19,25 @@ const App: Component = () => {
     }
   })
 
+  const handleIncreaseCount = () => {
+    setCount((prev) => prev + 1)
+  }
+
+  const handleOverrideDoubleCount = () => {
+    setDoubleCount((prev) => {
+      setLastSetterPrev(prev?.value)
+
+      return {
+        value: (prev?.value ?? 0) + 10,
+        prevValue: prev?.value,
+      }
+    })
+  }
+
+  const handleResetCount = () => {
+    setCount(1)
+  }
+
   return (
     <main class="app-shell">
       <section class="app-panel">
@@ -46,14 +65,14 @@ const App: Component = () => {
 
           <article class="metric-card">
             <p class="metric-label nowrap">prev ใน derive function</p>
-            <strong class="metric-value-md">
+            <strong class="metric-value-lg">
               {doubleCount().prevValue ?? 'ยังไม่มี'}
             </strong>
           </article>
 
           <article class="metric-card">
             <p class="metric-label nowrap">prev ใน setter function</p>
-            <strong class="metric-value-md">
+            <strong class="metric-value-lg">
               {lastSetterPrev() ?? 'ยังไม่มี'}
             </strong>
           </article>
@@ -63,30 +82,17 @@ const App: Component = () => {
           <p class="actions-title">ลองกดปุ่มเพื่อดูการเปลี่ยนค่า</p>
 
           <div class="button-row">
-            <button
-              onClick={() => setCount((prev) => prev + 1)}
-              class="action-button action-button-primary">
+            <button onClick={handleIncreaseCount} class="action-button action-button-primary">
               เพิ่ม count
             </button>
 
             <button
-              onClick={() =>
-                setDoubleCount((prev) => {
-                  setLastSetterPrev(prev?.value)
-
-                  return {
-                    value: (prev?.value ?? 0) + 10,
-                    prevValue: prev?.value,
-                  }
-                })
-              }
+              onClick={handleOverrideDoubleCount}
               class="action-button action-button-info">
               override doubleCount + 10
             </button>
 
-            <button
-              onClick={() => setCount(1)}
-              class="action-button action-button-secondary">
+            <button onClick={handleResetCount} class="action-button action-button-secondary">
               reset count = 1
             </button>
           </div>

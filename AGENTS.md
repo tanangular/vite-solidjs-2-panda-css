@@ -181,3 +181,40 @@ Read type definitions from `node_modules/solid-js/types/`:
 Also check `node_modules/@solidjs/signals/dist/types/signals.d.ts` for canonical reactivity primitives.
 
 Full migration: `node_modules/solid-js/documentation/solid-2.0/MIGRATION.md`
+
+---
+
+## Project Coding Style
+
+### 1. Event handlers must be extracted
+
+Always create named handler callback functions inside the component and pass them to JSX.
+
+```tsx
+const handleIncrement = () => {
+  setCount((prev) => prev + 1);
+};
+
+<button onClick={handleIncrement}>Increase</button>;
+```
+
+Do not inline non-trivial event logic in JSX.
+
+```tsx
+<button
+  onClick={() => {
+    setCount((prev) => prev + 1);
+    logAnalytics();
+  }}
+/>
+```
+
+### 2. Styles must live in CSS files
+
+Keep component files focused on JSX structure and logic. Put styles in a dedicated CSS file and import it from the component.
+
+```tsx
+import "./App.css";
+```
+
+Do not define large inline style objects in the component unless there is a narrow, unavoidable runtime need.
