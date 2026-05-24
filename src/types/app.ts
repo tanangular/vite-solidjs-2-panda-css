@@ -7,6 +7,7 @@ export interface TutorialSection {
   id: string
   option: string
   summary: string
+  howToWork: string
   whenToUse: string
   benefit: string
   caution: string
